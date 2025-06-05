@@ -31,6 +31,15 @@ export class Space implements CustomJsonReplacerInterface {
     public addUser(sourceWatcher: SpacesWatcher, spaceUser: SpaceUser) {
         try {
             const usersList = this.usersList(sourceWatcher);
+
+            if (usersList.has(spaceUser.spaceUserId)) {
+                debug("User already exists in this space", spaceUser.spaceUserId, "in space :", this.name);
+                Sentry.captureMessage(
+                    `User already exists in this space ${spaceUser.spaceUserId} in space : ${this.name}`
+                );
+                return;
+            }
+
             usersList.set(spaceUser.spaceUserId, spaceUser);
             this.notifyWatchers(
                 {

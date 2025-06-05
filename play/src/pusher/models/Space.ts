@@ -103,7 +103,6 @@ export class Space {
         }
         this.users.set(spaceUser.spaceUserId, user as SpaceUserExtended);
         debug(`${this.name} : user added ${spaceUser.spaceUserId}. User count ${this.users.size}`);
-
         const subMessage: SubMessage = {
             message: {
                 $case: "addSpaceUserMessage",
