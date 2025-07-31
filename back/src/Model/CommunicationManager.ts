@@ -50,5 +50,7 @@ export class CommunicationManager implements ICommunicationManager {
 }
 
 export const CommunicationConfig = {
-    MAX_USERS_FOR_WEBRTC: 2,
+    MAX_STREAMERS_FOR_PEER: 2,
+    //TODO Increase the first one to at least 15
+    MAX_WATCHERS_FOR_PEER: 4,
 };

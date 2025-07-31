@@ -112,18 +112,56 @@ export class WebRTCState extends CommunicationState {
     }
 
     protected shouldSwitchToNextState(): boolean {
-        /**
-         * TODO : Trouver une regle qui se base sur les flux plutot que sur le nombres d'utilisateur
-         * pour eviter les switchs inutiles (ex: si on a 100 utilisateurs  1 personnes diffuse et 1 personne watch peut etre pas utile de switch
-         *  ou une personne stream pour 5/6 personnes )
-         **/
+        const activeStreamers = this._space.getUsersInFilter().length;
+        const activeWatchers = this._space.getUsersToNotify().length;
 
-        return this._space.getAllUsers().length > this.MAX_USERS_FOR_WEBRTC && !this.isSwitching();
+        const isStreamerOverload = activeStreamers > this.MAX_STREAMERS_FOR_PEER;
+        const isWatcherOverload = activeWatchers > this.MAX_WATCHERS_FOR_PEER;
+        const isOneStreamBigAudience = activeStreamers > 0 && activeWatchers > 8;
+
+        const shouldSwitch = (isStreamerOverload || isWatcherOverload || isOneStreamBigAudience) && !this.isSwitching();
+
+        if (shouldSwitch) {
+            console.log("Switching to LiveKit due to:", {
+                activeStreamers,
+                activeWatchers,
+                isStreamerOverload,
+                isWatcherOverload,
+                isOneStreamBigAudience,
+            });
+        } else {
+            console.log("Staying in Peer-to-Peer:", { activeStreamers, activeWatchers });
+        }
+
+        return shouldSwitch;
     }
 
     protected shouldSwitchBackToCurrentState(): boolean {
-        const isMaxUsersReached = this._space.getAllUsers().length <= this.MAX_USERS_FOR_WEBRTC;
-        return this.isSwitching() && isMaxUsersReached;
+        const activeStreamers = this._space.getUsersInFilter().length;
+        const activeWatchers = this._space.getUsersToNotify().length;
+
+        const isStreamerLoadLow = activeStreamers <= this.MAX_STREAMERS_FOR_PEER - 2;
+        const isWatcherLoadLow = activeWatchers <= this.MAX_WATCHERS_FOR_PEER - 3;
+        const isOneStreamSmallAudience = activeStreamers === 1 && activeWatchers <= 6;
+
+        const shouldSwitchBack =
+            this.isSwitching() && isStreamerLoadLow && isWatcherLoadLow && isOneStreamSmallAudience;
+
+        if (shouldSwitchBack) {
+            console.log("Switching back to Peer-to-Peer:", { activeStreamers, activeWatchers });
+        } else {
+            console.log("Staying on LiveKit:", {
+                reason: {
+                    streamersLow: isStreamerLoadLow,
+                    watchersLow: isWatcherLoadLow,
+                    oneStreamSmallAudience: isOneStreamSmallAudience,
+                },
+                activeStreamers,
+                activeWatchers,
+            });
+        }
+
+        return shouldSwitchBack;
     }
 
     protected afterSwitchAction(): void {
