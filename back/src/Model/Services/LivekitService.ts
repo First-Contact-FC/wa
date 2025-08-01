@@ -12,9 +12,8 @@ import {
 } from "livekit-server-sdk";
 import * as Sentry from "@sentry/node";
 import Debug from "debug";
-import { LIVEKIT_WS_URL, LIVEKIT_API_SECRET, LIVEKIT_API_KEY, LIVEKIT_HOST } from "../../Enum/EnvironmentVariable";
 
-const debug = Debug("livekit");
+const debug = Debug("LivekitService");
 
 const defaultRoomServiceClient = (livekitHost: string, livekitApiKey: string, livekitApiSecret: string) =>
     new RoomServiceClient(livekitHost, livekitApiKey, livekitApiSecret);
@@ -23,9 +22,11 @@ const defaultEgressClient = (livekitHost: string, livekitApiKey: string, livekit
 export class LiveKitService {
     private roomServiceClient: RoomServiceClient;
     private egressClient: EgressClient;
-    private currentRecordingInformation: EgressInfo | null = null;
-
     constructor(
+        private livekitHost: string,
+        private livekitApiKey: string,
+        private livekitApiSecret: string,
+        private livekitFrontendUrl: string,
         createRoomServiceClient: (
             livekitHost: string,
             livekitApiKey: string,
@@ -35,11 +36,7 @@ export class LiveKitService {
             livekitHost: string,
             livekitApiKey: string,
             livekitApiSecret: string
-        ) => EgressClient = defaultEgressClient,
-        private livekitHost = LIVEKIT_HOST,
-        private livekitApiKey = LIVEKIT_API_KEY,
-        private livekitApiSecret = LIVEKIT_API_SECRET,
-        private livekitFrontendUrl = LIVEKIT_WS_URL
+        ) => EgressClient = defaultEgressClient
     ) {
         if (!this.livekitHost || !this.livekitApiKey || !this.livekitApiSecret) {
             debug("Livekit host, api key or secret is not set");
@@ -49,16 +46,31 @@ export class LiveKitService {
         this.egressClient = createEgressClient(this.livekitHost, this.livekitApiKey, this.livekitApiSecret);
     }
 
-    async createRoom(roomName: string): Promise<void> {
-        const createOptions: CreateOptions = {
-            name: roomName,
-            emptyTimeout: 5 * 60 * 1000,
-            //maxParticipants: 1000,
-            departureTimeout: 5 * 60 * 1000,
-        };
+    private currentRecordingInformation: EgressInfo | null = null;
 
-        await this.roomServiceClient.createRoom(createOptions);
-        // this.startRecording(roomName).catch((error) => console.error(">>>> startRecording error", error));
+    async createRoom(roomName: string): Promise<void> {
+        try {
+            // First check if the room already exists
+            const rooms = await this.roomServiceClient.listRooms([roomName]);
+            if (rooms && rooms.length > 0) {
+                return;
+            }
+
+            // Room doesn't exist, create it
+            const createOptions: CreateOptions = {
+                name: roomName,
+                emptyTimeout: 5 * 60 * 1000,
+                //maxParticipants: 1000,
+                departureTimeout: 5 * 60 * 1000,
+            };
+
+            await this.roomServiceClient.createRoom(createOptions);
+        } catch (error) {
+            console.error(`LivekitService.createRoom: Error creating room ${roomName}:`, error);
+            Sentry.captureException(error);
+            // Re-throw the error to be handled by the caller
+            throw error;
+        }
     }
 
     async generateToken(roomName: string, user: SpaceUser, tokenType: LivekitTokenType): Promise<string> {
@@ -107,22 +119,37 @@ export class LiveKitService {
             const rooms = await this.roomServiceClient.listRooms([roomName]);
 
             if (rooms && rooms.length > 0) {
+                console.log(
+                    `LivekitService.removeParticipant: Room ${roomName} found, checking for participant ${participantName}`
+                );
                 const participants = await this.roomServiceClient.listParticipants(roomName);
                 const participantExists = participants.some(
                     (p) => p.identity === this.getParticipantIdentity(participantName, tokenType)
                 );
 
                 if (!participantExists) {
-                    console.warn(`Participant ${participantName} not found in room ${roomName}`);
+                    console.warn(
+                        `LivekitService.removeParticipant: Participant ${participantName} not found in room ${roomName}`
+                    );
                     return;
                 }
+
+                console.log(
+                    `LivekitService.removeParticipant: Participant ${participantName} found in room ${roomName}, removing...`
+                );
             } else {
-                console.warn(`Room ${roomName} not found`);
+                console.warn(`LivekitService.removeParticipant: Room ${roomName} not found`);
                 return;
             }
             await this.roomServiceClient.removeParticipant(roomName, participantName);
+            console.log(
+                `LivekitService.removeParticipant: Successfully removed participant ${participantName} from room ${roomName}`
+            );
         } catch (error) {
-            console.error(`Error removing participant ${participantName} from room ${roomName}:`, error);
+            console.error(
+                `LivekitService.removeParticipant: Error removing participant ${participantName} from room ${roomName}:`,
+                error
+            );
             Sentry.captureException(error);
         }
     }
@@ -161,7 +188,7 @@ export class LiveKitService {
                 disableManifest: true,
             });
 
-            const result = await this.egressClient.startRoomCompositeEgress(
+            this.currentRecordingInformation = await this.egressClient.startRoomCompositeEgress(
                 roomName,
                 {
                     file: output,
@@ -170,8 +197,6 @@ export class LiveKitService {
                     layout,
                 }
             );
-
-            this.currentRecordingInformation = result;
 
             // Stop recording after 60 seconds
             // setTimeout(async () => {
