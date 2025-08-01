@@ -1387,7 +1387,10 @@ export class SocketManager {
         if (!space) {
             throw new Error(`Could not find space ${publicEvent.spaceName} to dispatch public event`);
         }
-        space.dispatchPublicEvent(publicEvent);
+        space.dispatchPublicEvent(publicEvent).catch((error) => {
+            console.error(error);
+            Sentry.captureException(error);
+        });
     }
 
     handlePrivateEvent(pusher: SpacesWatcher, privateEvent: PrivateEvent) {
@@ -1534,7 +1537,7 @@ export class SocketManager {
         clientEventsEmitter.emitDeleteSpace(spaceName);
     }
 
-    handleSpaceQueryMessage(pusher: SpacesWatcher, spaceQueryMessage: SpaceQueryMessage) {
+    async handleSpaceQueryMessage(pusher: SpacesWatcher, spaceQueryMessage: SpaceQueryMessage) {
         const space = this.spaces.get(spaceQueryMessage.spaceName);
 
         if (!space) {
@@ -1548,7 +1551,7 @@ export class SocketManager {
         }
 
         try {
-            const answer = space.handleQuery(pusher, spaceQueryMessage);
+            const answer = await space.handleQuery(pusher, spaceQueryMessage);
             pusher.write({
                 message: {
                     $case: "spaceAnswerMessage",
@@ -1566,7 +1569,10 @@ export class SocketManager {
         }
     }
 
-    handleAddSpaceUserToNotifyMessage(pusher: SpacesWatcher, addSpaceUserToNotifyMessage: AddSpaceUserToNotifyMessage) {
+    async handleAddSpaceUserToNotifyMessage(
+        pusher: SpacesWatcher,
+        addSpaceUserToNotifyMessage: AddSpaceUserToNotifyMessage
+    ) {
         const space = this.spaces.get(addSpaceUserToNotifyMessage.spaceName);
         if (!space) {
             throw new Error(`Could not find space ${addSpaceUserToNotifyMessage.spaceName} to add user to notify`);
@@ -1574,7 +1580,7 @@ export class SocketManager {
         if (!addSpaceUserToNotifyMessage.user) {
             throw new Error(`User to add to notify is undefined in AddSpaceUserToNotifyMessage`);
         }
-        space.addUserToNotify(pusher, addSpaceUserToNotifyMessage.user);
+        await space.addUserToNotify(pusher, addSpaceUserToNotifyMessage.user);
     }
 
     handleDeleteSpaceUserToNotifyMessage(

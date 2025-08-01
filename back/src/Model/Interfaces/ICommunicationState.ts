@@ -5,6 +5,11 @@ export interface ICommunicationState {
     handleUserDeleted(user: SpaceUser): void;
     handleUserUpdated(user: SpaceUser): void;
     handleUserReadyForSwitch(userId: string): void;
-    handleUserToNotifyAdded(user: SpaceUser): void;
+    handleUserToNotifyAdded(user: SpaceUser): Promise<void>;
     handleUserToNotifyDeleted(user: SpaceUser): void;
+}
+
+export interface IRecordableState extends ICommunicationState {
+    handleStartRecording(user: SpaceUser, userUuid: string): Promise<void>;
+    handleStopRecording(): Promise<void>;
 }

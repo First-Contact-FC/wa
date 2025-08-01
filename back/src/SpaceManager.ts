@@ -66,11 +66,11 @@ const spaceManager = {
                         break;
                     }
                     case "spaceQueryMessage": {
-                        socketManager.handleSpaceQueryMessage(pusher, message.message.spaceQueryMessage);
+                        await socketManager.handleSpaceQueryMessage(pusher, message.message.spaceQueryMessage);
                         break;
                     }
                     case "addSpaceUserToNotifyMessage": {
-                        socketManager.handleAddSpaceUserToNotifyMessage(
+                        await socketManager.handleAddSpaceUserToNotifyMessage(
                             pusher,
                             message.message.addSpaceUserToNotifyMessage
                         );
