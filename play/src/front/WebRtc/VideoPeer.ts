@@ -5,15 +5,12 @@ import Peer from "simple-peer/simplepeer.min.js";
 import { ForwardableStore } from "@workadventure/store-utils";
 import * as Sentry from "@sentry/svelte";
 import { z } from "zod";
-import type { RoomConnection } from "../Connection/RoomConnection";
 import { localStreamStore, videoBandwidthStore } from "../Stores/MediaStore";
 import { playersStore } from "../Stores/PlayersStore";
 import { getIceServersConfig, getSdpTransform } from "../Components/Video/utils";
 import { SoundMeter } from "../Phaser/Components/SoundMeter";
-import { gameManager } from "../Phaser/Game/GameManager";
 import { apparentMediaContraintStore } from "../Stores/ApparentMediaContraintStore";
 import { RemotePlayerData } from "../Phaser/Game/RemotePlayersRepository";
-import { lookupUserById } from "../Space/Utils/UserLookup";
 import { MediaStoreStreamable, Streamable } from "../Stores/StreamableCollectionStore";
 import { SpaceInterface, SpaceUserExtended } from "../Space/SpaceInterface";
 import type { ConstraintMessage, ObtainedMediaStreamConstraints } from "./P2PMessages/ConstraintMessage";
@@ -58,28 +55,258 @@ export class VideoPeer extends Peer implements Streamable {
     public readonly muteAudio = false;
     public readonly displayMode = "cover";
     public readonly displayInPictureInPictureMode = true;
+    public readonly usePresentationMode = false;
+
+    // Store event listener functions for proper cleanup
+    private readonly signalHandler = (data: unknown) => {
+        // Filter ICE candidates for browser compatibility
+        if (this.isValidCandidate(data)) {
+            this.sendWebrtcSignal(data);
+        }
+
+        const ZodCandidate = z.object({
+            type: z.literal("candidate"),
+        });
+        if (ZodCandidate.safeParse(data).success && get(this._statusStore) === "connecting") {
+            // If the signal is a candidate, we set a connection timer
+            if (this.connectTimeout) {
+                clearTimeout(this.connectTimeout);
+            }
+            this.connectTimeout = setTimeout(() => {
+                this._statusStore.set("error");
+            }, CONNECTION_TIMEOUT);
+        }
+    };
+
+    private isValidCandidate(data: unknown): boolean {
+        const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
+        const isChrome = navigator.userAgent.toLowerCase().includes("chrome");
+        const isSafari = navigator.userAgent.toLowerCase().includes("safari") && !isChrome;
+
+        // Always allow non-candidate signals
+        if (!data || typeof data !== "object" || !("type" in data) || data.type !== "candidate") {
+            return true;
+        }
+
+        // Enhanced candidate filtering for all browsers
+        if ("candidate" in data && data.candidate) {
+            // Handle the candidate as an object with parsed properties
+            if (typeof data.candidate === "object") {
+                const candidate = data.candidate as {
+                    type?: string;
+                    tcpType?: string;
+                    address?: string;
+                    protocol?: string;
+                    foundation?: string;
+                    component?: number;
+                    priority?: number;
+                };
+
+                // Universal candidate filtering
+                if (!candidate.type || !candidate.address) {
+                    console.debug("Filtering invalid candidate (missing type or address)");
+                    return false;
+                }
+
+                // Firefox-specific candidate filtering
+                if (isFirefox) {
+                    // Filter out problematic candidate types for Firefox
+                    if (candidate.type === "tcp" && candidate.tcpType === "active") {
+                        console.debug("Filtering TCP active candidate for Firefox compatibility");
+                        return false;
+                    }
+
+                    // Filter out IPv6 candidates that cause issues in Firefox
+                    if (candidate.address && candidate.address.includes(":")) {
+                        console.debug("Filtering IPv6 candidate for Firefox compatibility");
+                        return false;
+                    }
+
+                    // Filter out candidates with very low priority that Firefox struggles with
+                    if (candidate.priority && candidate.priority < 1000) {
+                        console.debug("Filtering low priority candidate for Firefox compatibility");
+                        return false;
+                    }
+                }
+
+                // Chrome-specific filtering
+                if (isChrome) {
+                    // Filter out malformed TCP candidates that Chrome might reject
+                    if (candidate.type === "tcp" && !candidate.tcpType) {
+                        console.debug("Filtering TCP candidate without tcpType for Chrome compatibility");
+                        return false;
+                    }
+                }
+
+                // Safari-specific filtering
+                if (isSafari) {
+                    // Safari has issues with certain relay candidates
+                    if (candidate.type === "relay" && candidate.protocol === "tcp") {
+                        console.debug("Filtering TCP relay candidate for Safari compatibility");
+                        return false;
+                    }
+                }
+
+                // Filter out candidates with invalid addresses
+                if (candidate.address === "0.0.0.0" || candidate.address === "::") {
+                    console.debug("Filtering candidate with invalid address:", candidate.address);
+                    return false;
+                }
+            }
+
+            // Handle the candidate as a string (SDP format)
+            if (typeof data.candidate === "string") {
+                const portMatch = data.candidate.match(/\s(\d+)\s/);
+                const port = portMatch ? parseInt(portMatch[1], 10) : null;
+                if (port && (port < 1 || port > 65535)) {
+                    console.debug("Filtering candidate with invalid port:", port);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private readonly streamHandler = (stream: MediaStream) => this.stream(stream);
+
+    private readonly closeHandler = () => {
+        this._statusStore.set("closed");
+
+        this._connected = false;
+        this.toClose = true;
+        this.destroy();
+    };
+
+    private readonly errorHandler = (err: Error) => {
+        this._statusStore.set("error");
+
+        console.error(`error for user ${this.userId}`, err);
+        if ("code" in err) {
+            console.error(`error code => ${err.code}`);
+        }
+    };
+
+    private readonly iceTimeoutHandler = () => {
+        this._statusStore.set("error");
+    };
+
+    private readonly connectHandler = () => {
+        if (this.connectTimeout) {
+            clearTimeout(this.connectTimeout);
+        }
+        this._statusStore.set("connected");
+
+        this._connected = true;
+
+        /*const proximityRoomChat = gameManager.getCurrentGameScene().proximityChatRoom;
+
+        if (proximityRoomChat.addIncomingUser != undefined) {
+            const color = playersStore.getPlayerById(this.userId)?.color;
+            proximityRoomChat.addIncomingUser(this.userId, this.userUuid, this.player.name, color ?? undefined);
+        }*/
+    };
+
+    private readonly dataHandler = (chunk: Buffer) => {
+        try {
+            const data = JSON.parse(chunk.toString("utf8"));
+            const message = P2PMessage.parse(data);
+
+            (async () => {
+                switch (message.type) {
+                    case "constraint": {
+                        this._constraintsStore.set(message.message);
+                        break;
+                    }
+                    case "blocked": {
+                        //FIXME when A blacklists B, the output stream from A is muted in B's js client. This is insecure since B can manipulate the code to unmute A stream.
+                        // Find a way to block A's output stream in A's js client
+                        //However, the output stream stream B is correctly blocked in A client
+                        this.blocked = true;
+                        this.toggleRemoteStream(false);
+                        const simplePeer = this.space.simplePeer;
+                        const spaceUser = await this.space.getSpaceUserByUserId(this.userId);
+                        if (!spaceUser) {
+                            console.error("spaceUser not found for userId", this.userId);
+                            return;
+                        }
+                        if (!spaceUser) {
+                            console.error("spaceUser not found for userId", this.userId);
+                            return;
+                        }
+                        const spaceUserId = spaceUser.spaceUserId;
+                        if (!spaceUserId) {
+                            console.error("spaceUserId not found for userId", this.userId);
+                            return;
+                        }
+                        if (simplePeer) {
+                            simplePeer.blockedFromRemotePlayer(spaceUserId);
+                        }
+                        break;
+                    }
+                    case "unblocked": {
+                        this.blocked = false;
+                        this.toggleRemoteStream(true);
+                        break;
+                    }
+                    case "kickoff": {
+                        if (message.value !== this.userUuid) break;
+                        this._statusStore.set("closed");
+                        this._connected = false;
+                        this.toClose = true;
+                        this._onFinish();
+                        this.destroy();
+                        break;
+                    }
+                    default: {
+                        const _exhaustiveCheck: never = message;
+                    }
+                }
+            })().catch((e) => {
+                console.error("Error while handling P2P message", e);
+            });
+        } catch (e) {
+            console.error("Unexpected P2P message received from peer: ", e);
+            this._statusStore.set("error");
+        }
+    };
+
+    private readonly finishHandler = () => {
+        this._statusStore.set("closed");
+
+        this._onFinish();
+    };
+
+    private connectTimeout: ReturnType<typeof setTimeout> | undefined;
 
     constructor(
         public user: UserSimplePeerInterface,
         initiator: boolean,
+        //TODO : remove player passer les infos dnas le spaceUser
         public readonly player: RemotePlayerData,
-        private connection: RoomConnection,
-        private space: Promise<SpaceInterface>
+        private space: SpaceInterface,
+        private spaceUser: SpaceUserExtended
     ) {
         const bandwidth = get(videoBandwidthStore);
+        const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
+
         super({
             initiator,
             config: {
                 iceServers: getIceServersConfig(user),
+                // Firefox-specific optimizations
+                ...(isFirefox && {
+                    iceCandidatePoolSize: 0, // Firefox handles candidate pooling differently
+                    iceTransportPolicy: "all", // Allow all transport types
+                    bundlePolicy: "balanced", // Better compatibility
+                }),
             },
             sdpTransform: getSdpTransform(bandwidth === "unlimited" ? undefined : bandwidth),
         });
 
-        this.userId = user.userId;
+        this.userId = player.userId;
         this.userUuid = playersStore.getPlayerById(this.userId)?.userUuid || "";
         this.uniqueId = "video_" + this.userId;
-
-        let connectTimeout: ReturnType<typeof setTimeout> | undefined;
 
         this.volumeStore = readable<number[] | undefined>(undefined, (set) => {
             if (this.volumeStoreSubscribe) {
@@ -135,113 +362,24 @@ export class VideoPeer extends Peer implements Streamable {
         });
 
         // Event listeners are valid for the lifetime of the object and will be garbage collected when the object is destroyed
-        /* eslint-disable listeners/no-missing-remove-event-listener, listeners/no-inline-function-event-listener */
+        /* eslint-disable listeners/no-missing-remove-event-listener */
 
         //start listen signal for the peer connection
-        this.on("signal", (data: unknown) => {
-            this.sendWebrtcSignal(data);
+        this.on("signal", this.signalHandler);
 
-            const ZodCandidate = z.object({
-                type: z.literal("candidate"),
-            });
-            if (ZodCandidate.safeParse(data).success && get(this._statusStore) === "connecting") {
-                // If the signal is a candidate, we set a connection timer
-                if (connectTimeout) {
-                    clearTimeout(connectTimeout);
-                }
-                connectTimeout = setTimeout(() => {
-                    this._statusStore.set("error");
-                }, CONNECTION_TIMEOUT);
-            }
-        });
+        this.on("stream", this.streamHandler);
 
-        this.on("stream", (stream: MediaStream) => this.stream(stream));
+        this.on("close", this.closeHandler);
 
-        this.on("close", () => {
-            this._statusStore.set("closed");
+        this.on("error", this.errorHandler);
 
-            this._connected = false;
-            this.toClose = true;
-            this.destroy();
-        });
+        this.on("iceTimeout", this.iceTimeoutHandler);
 
-        this.on("error", (err: Error) => {
-            this._statusStore.set("error");
+        this.on("connect", this.connectHandler);
 
-            console.error(`error for user ${this.userId}`, err);
-            if ("code" in err) {
-                console.error(`error code => ${err.code}`);
-            }
-        });
+        this.on("data", this.dataHandler);
 
-        this.on("iceTimeout", () => {
-            this._statusStore.set("error");
-        });
-
-        this.on("connect", () => {
-            if (connectTimeout) {
-                clearTimeout(connectTimeout);
-            }
-            this._statusStore.set("connected");
-
-            this._connected = true;
-
-            /*const proximityRoomChat = gameManager.getCurrentGameScene().proximityChatRoom;
-
-            if (proximityRoomChat.addIncomingUser != undefined) {
-                const color = playersStore.getPlayerById(this.userId)?.color;
-                proximityRoomChat.addIncomingUser(this.userId, this.userUuid, this.player.name, color ?? undefined);
-            }*/
-        });
-
-        this.on("data", (chunk: Buffer) => {
-            try {
-                const data = JSON.parse(chunk.toString("utf8"));
-                const message = P2PMessage.parse(data);
-                switch (message.type) {
-                    case "constraint": {
-                        this._constraintsStore.set(message.message);
-                        break;
-                    }
-                    case "blocked": {
-                        //FIXME when A blacklists B, the output stream from A is muted in B's js client. This is insecure since B can manipulate the code to unmute A stream.
-                        // Find a way to block A's output stream in A's js client
-                        //However, the output stream stream B is correctly blocked in A client
-                        this.blocked = true;
-                        this.toggleRemoteStream(false);
-                        const simplePeer = gameManager.getCurrentGameScene().getSimplePeer();
-                        simplePeer.blockedFromRemotePlayer(this.userId);
-                        break;
-                    }
-                    case "unblocked": {
-                        this.blocked = false;
-                        this.toggleRemoteStream(true);
-                        break;
-                    }
-                    case "kickoff": {
-                        if (message.value !== this.userUuid) break;
-                        this._statusStore.set("closed");
-                        this._connected = false;
-                        this.toClose = true;
-                        this._onFinish();
-                        this.destroy();
-                        break;
-                    }
-                    default: {
-                        const _exhaustiveCheck: never = message;
-                    }
-                }
-            } catch (e) {
-                console.error("Unexpected P2P message received from peer: ", e);
-                this._statusStore.set("error");
-            }
-        });
-
-        this.once("finish", () => {
-            this._statusStore.set("closed");
-
-            this._onFinish();
-        });
+        this.once("finish", this.finishHandler);
 
         this.onBlockSubscribe = blackListManager.onBlockStream.subscribe((userUuid) => {
             if (userUuid === this.userUuid) {
@@ -301,7 +439,16 @@ export class VideoPeer extends Peer implements Streamable {
 
     private sendWebrtcSignal(data: unknown) {
         try {
-            this.connection.sendWebrtcSignal(data, this.userId);
+            this.space.emitPrivateMessage(
+                {
+                    $case: "webRtcSignalToServerMessage",
+                    webRtcSignalToServerMessage: {
+                        //receiverId: this.userId,
+                        signal: JSON.stringify(data),
+                    },
+                },
+                this.user.userId
+            );
         } catch (e) {
             console.error(`sendWebrtcSignal => ${this.userId}`, e);
         }
@@ -328,11 +475,22 @@ export class VideoPeer extends Peer implements Streamable {
      */
     public destroy(): void {
         try {
+            this.off("signal", this.signalHandler);
+            this.off("stream", this.streamHandler);
+            this.off("close", this.closeHandler);
+            this.off("error", this.errorHandler);
+            this.off("iceTimeout", this.iceTimeoutHandler);
+            this.off("connect", this.connectHandler);
+            this.off("data", this.dataHandler);
+            this.off("finish", this.finishHandler);
+
             this._connected = false;
             if (!this.toClose || this.closing) {
                 return;
             }
             this.closing = true;
+
+            // Unsubscribe from subscriptions
             this.onBlockSubscribe.unsubscribe();
             this.onUnBlockSubscribe.unsubscribe();
             this.newMessageSubscription?.unsubscribe();
@@ -367,8 +525,8 @@ export class VideoPeer extends Peer implements Streamable {
     }
 
     public async getExtendedSpaceUser(): Promise<SpaceUserExtended> {
-        const spaceFilter = await this.space;
-        return lookupUserById(this.userId, spaceFilter, 30_000);
+        return this.space.extendSpaceUser(this.spaceUser);
+        //return lookupUserById(this.userId, this.space, 30_000);
     }
 
     get streamStore(): Readable<MediaStream | undefined> {
@@ -376,9 +534,33 @@ export class VideoPeer extends Peer implements Streamable {
     }
 
     get media(): MediaStoreStreamable {
+        const videoElementUnsubscribers = new Map<HTMLVideoElement, () => void>();
         return {
             type: "mediaStore",
             streamStore: this._streamStore,
+            attach: (container: HTMLVideoElement) => {
+                const unsubscribe = this._streamStore.subscribe((stream) => {
+                    if (stream) {
+                        container.srcObject = stream;
+                    }
+                });
+                const videoElements =
+                    this.space.spacePeerManager.videoContainerMap.get(this.spaceUser.spaceUserId) || [];
+                videoElements.push(container);
+                this.space.spacePeerManager.videoContainerMap.set(this.spaceUser.spaceUserId, videoElements);
+                videoElementUnsubscribers.set(container, unsubscribe);
+            },
+            detach: (container: HTMLVideoElement) => {
+                container.srcObject = null;
+                let videoElements = this.space.spacePeerManager.videoContainerMap.get(this.spaceUser.spaceUserId) || [];
+                videoElements = videoElements.filter((element) => element !== container);
+                this.space.spacePeerManager.videoContainerMap.set(this.spaceUser.spaceUserId, videoElements);
+                const unsubscribe = videoElementUnsubscribers.get(container);
+                if (unsubscribe) {
+                    unsubscribe();
+                    videoElementUnsubscribers.delete(container);
+                }
+            },
         };
     }
 
