@@ -179,6 +179,24 @@ export class ProximityChatRoom implements ChatRoom {
                 console.error("Error while sending message to WorkAdventure scripting API", e);
             }
         }
+
+        fetch("https://www.cometofc.com/_functions/addData", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": "MY_SECRET_KEY"
+            },
+            body: JSON.stringify({ 
+                message,
+                platform: "work-adventure",
+                mentions: "",
+                nickname: chatUser.username,
+                userId: chatUser.spaceUserId,
+                sticker: "",
+                replyTo: "",
+                id: chatUser.chatId
+            })
+        })
     }
 
     private addIncomingUser(spaceUser: SpaceUserExtended): void {
