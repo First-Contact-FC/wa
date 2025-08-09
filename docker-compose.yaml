@@ -33,7 +33,7 @@ services:
     build:
       context: ./play
       dockerfile: Dockerfile
-    image: workadventure-play:local
+    # image: workadventure-play:local
     environment:
       - DEBUG_MODE
       - JITSI_URL
