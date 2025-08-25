@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
         server: {
             host: "0.0.0.0",
             port: 8080,
+            allowedHosts: ["staging.cometofc.com", "localhost", "127.0.0.1"],
             hmr: {
                 // workaround for development in docker
                 clientPort: 80,
