@@ -47,7 +47,6 @@
     },
     "@antfu/install-pkg": "0.3.3",
     "package-manager-detector": "1.1.0",
-
     "unplugin-icons": {
       ".": "0.19.0",
       "@iconify/utils": {
@@ -55,6 +54,24 @@
         "@antfu/install-pkg": "0.1.1"
       }
     }
-  }
-
+  },
+  "version": "1.0.0",
+  "description": "![](https://github.com/thecodingmachine/workadventure/workflows/Continuous%20Integration/badge.svg) [![Discord](https://img.shields.io/discord/821338762134290432?label=Discord)](https://discord.gg/G6Xh9ZM9aR) ![Awesome](https://awesome.re/badge.svg)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/First-Contact-FC/wa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/First-Contact-FC/wa/issues"
+  },
+  "homepage": "https://github.com/First-Contact-FC/wa#readme"
 }

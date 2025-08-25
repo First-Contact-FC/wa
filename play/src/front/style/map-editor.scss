@@ -44,22 +44,22 @@ p.help-text{
   }
 
   .menu {
-    @apply border-0 border-r border-solid border-lighter-purple/50 w-1/4 min-w-[25%];
+    @apply border-0 border-r border-solid [#B19FFF] w-1/4 min-w-[25%];
     h3 {
       @apply px-5 py-3.5;
     }
 
     ul {
-      @apply list-none m-0 p-0 border-0 border-b border-solid border-lighter-purple/50;
+      @apply list-none m-0 p-0 border-0 border-b border-solid [#B19FFF];
       li {
         @apply cursor-pointer px-5 py-3 text-lg flex flex-wrap justify-between items-center;
         &:nth-of-type(1n + 1) {
-          @apply border-0 border-t border-solid border-lighter-purple/50;
+          @apply border-0 border-t border-solid [#B19FFF];
         }
 
         &:hover,
         &.selected {
-          @apply bg-white/10;
+          @apply bg-[#B9B7C5];
         }
 
         &.selected {
@@ -155,7 +155,7 @@ p.help-text{
     border-left-width: 1px;
     border-left-style: solid;
     --border-opacity: 1;
-    border-color: rgb(77 75 103 / var(--border-opacity));
+    border-color: rgb(126, 119, 153 / var(--border-opacity));
   }
 
   .value-input{
@@ -207,16 +207,16 @@ p.help-text{
     -moz-appearance: none;
     appearance: none;
     border-radius: 9999px;
-    border-width: 1px;
+    border-width: 2px;
     border-style: solid;
-    --border-opacity: 1;
-    border-color: rgb(77 75 103 / var(--border-opacity));
+    --border-opacity: 100%;
+    border-color: #3F3666;
     --bg-opacity: 1;
-    background-color: rgb(15 31 45 / var(--bg-opacity));
+    background-color: #D8CFFF;
     background-image: none;
     padding: 0;
     --text-opacity: 1;
-    color: rgb(242 253 255 / var(--text-opacity));
+    color: rgb(235, 231, 255 / var(--text-opacity));
     outline: 2px solid transparent;
     outline-offset: 2px;
     margin-left: 8px;
@@ -230,8 +230,8 @@ p.help-text{
       width: 1.25rem;
       border-radius: 9999px;
       --bg-opacity: 1;
-      background-color: rgb(146 142 187 / var(--bg-opacity));
-      transition-property: all;
+      background-color: #3F3666;
+            transition-property: all;
       transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
       transition-duration: 150ms;
       --content: "";
@@ -240,14 +240,16 @@ p.help-text{
 
     &:checked {
       --border-opacity: 1;
-      border-color: rgb(146 142 187 / var(--border-opacity));
+      border-color: #121113;
+      border-width: 1px;
+      background-color: #9D87FF;
     }
 
     &:checked::before {
       left: 13px;
       top: -3px;
       --bg-opacity: 1;
-      background-color: rgb(65 86 246 / var(--bg-opacity));
+      background-color: #121113;
       content: var(--content);
       /*--shadow: 0 0 7px 0 rgba(4, 255, 210, 1);
   --shadow-colored: 0 0 7px 0 var(--shadow-color);
@@ -256,7 +258,8 @@ p.help-text{
 
     &:disabled {
       cursor: not-allowed;
-      opacity: 0.4;
+      opacity: 0.32;
+      background-color: #E6E0E980
     }
   }
 }}

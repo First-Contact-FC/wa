@@ -44,7 +44,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
 /******** Firefox styles ********/
 /* slider track */
 input[type="range"]::-moz-range-track {
-  background-color: #053a5f;
+  background-color: #7E7799;
   border-radius: 0.5rem;
   height: 0.5rem;
 }
@@ -52,16 +52,17 @@ input[type="range"]::-moz-range-track {
 /* slider thumb */
 input[type="range"]::-moz-range-thumb {
   border: none; /*Removes extra border that FF applies*/
-  border-radius: 0; /*Removes default border-radius that FF applies*/
+  border-radius: 0.5rem; /*Removes default border-radius that FF applies*/
 
   /*custom styles*/
-  background-color: #5cd5eb;
+  background-color: #7E7799;
   height: 2rem;
   width: 1rem;
 }
 
 input[type="range"]:focus::-moz-range-thumb {
-  border: 1px solid #053a5f;
-  outline: 3px solid #053a5f;
+  border: 1px solid #3F3666;
+  outline: 3px solid #3F3666;
   outline-offset: 0.125rem;
+  border-radius: 0.5rem;
 }

@@ -168,7 +168,7 @@
                             "string",
                             "null"
                           ],
-                          "default": "https://workadventu.re"
+                          "default": "https://www.cometofc.com/"
                         },
                         "newTab": {
                           "type": "boolean",

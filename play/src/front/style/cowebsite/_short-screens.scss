@@ -22,7 +22,7 @@
     &.opened {
       visibility: visible;
       transform: translateY(0%);
-      box-shadow: 3px 3px red, 1em 0 10em black;
+      box-shadow: 3px 3px #FE775F, 1em 0 10em #121113;
     }
 
     &.closing {

@@ -10,10 +10,17 @@ body {
     overflow: hidden;
 }
 
-body button:focus,
+/* Button: fully rounded pill shape */
+body button:focus {
+    outline: rgba(157, 135, 255, 0.4) auto 4px; /* semi-transparent purple outline */
+    border-radius: 50%; /* pill shape */
+    
+}
+
 body img:focus,
 body input:focus {
-    outline: -webkit-focus-ring-color auto 0;
+    outline: rgba(157, 135, 255, 0.4) auto 4px;
+    border-radius: calc(0.5em + 2px);
 }
 
 body .message-info {
@@ -23,24 +30,24 @@ body .message-info {
     position: absolute;
     top: 5px;
     left: 40%;
-    padding-top: 10px;
+    padding-top: 12px;
     text-align: center;
 }
 
 body .message-info.error {
-    background: red;
+    background: #FE775F;
 }
 
 body .message-info.success {
-    background: green;
+    background: #2CC082;
 }
 
 body .message-info.info {
-    background: dodgerblue;
+    background: #57B6FA;
 }
 
 body .message-info.warning {
-    background: #ffa500d6;
+    background: #FCD541;
 }
 
 
@@ -100,9 +107,9 @@ body {
     min-height: 200px;
     max-height: 80%;
     top: -80%;
-    /*left: 10%;*/
+    /*left: 10vh;*/
     left: 250px;
-    background: #333333;
+    background: #3F3C4C;
     z-index: 200;
     transition: all 0.1s ease-out;
     border-radius: 0 0 15px 15px;
@@ -110,8 +117,8 @@ body {
 
 .message-container {
     height: auto;
-    border-radius: 0 0 10px 10px;
-    color: white;
+    border-radius: 0 0 12px 12px;
+    color: #F7F7F9;
     top: 0;
 }
 
@@ -125,15 +132,15 @@ body {
 
 .message-container div.clear {
     position: absolute;
-    color: white;
+    color: #3F3666;
     z-index: 200;
     transition: all 0.1s ease-out;
     top: calc(100% + 2px);
     width: 200px;
     height: 40px;
-    background-color: #2d2d2dba;
+    background-color: #D8CFFF;
     left: calc(50% - 100px);
-    border-radius: 15px 15px 15px 15px;
+    border-radius: 10vh 15px 15px 15px;
     text-align: center;
 }
 
@@ -174,19 +181,19 @@ body {
 
 /* VIDEO QUALITY */
 .main-console div.setting h1 {
-    color: white;
+    color: #F7F7F9;
 }
 .main-console div.setting select {
-    background: black;
-    color: white;
+    background: #121113;
+    color: #F7F7F9;
     min-width: 280px;
     text-align: center;
     min-height: 40px;
-    padding: 10px;
-    border-radius: 15px;
+    padding: 12px;
+    border-radius: 10vh;
 }
 .main-console div.setting select:focus {
-    border: solid 1px white;
+    border: solid 1px #F7F7F9;
     outline: none;
 }
 .main-console div.setting.active section {
@@ -200,8 +207,8 @@ div.modal-report-user {
     height: 600px;
     left: calc(50% - 400px);
     top: 100px;
-    background-color: #000000ad;
-    border-radius: 15px;
+    background-color: #12111380;
+    border-radius: 10vh;
 }
 
 .modal-report-user textarea {
@@ -209,11 +216,11 @@ div.modal-report-user {
     height: 200px;
     z-index: 999;
     top: 200px;
-    background-color: #000000;
-    color: white;
+    background-color: #121113;
+    color: #F7F7F9;
     width: calc(100% - 60px);
     margin: 30px;
-    border-radius: 15px;
+    border-radius: 10vh;
 }
 
 .modal-report-user img {
@@ -222,7 +229,7 @@ div.modal-report-user {
     width: 24px;
     z-index: 999;
     left: calc(50% - 12px);
-    top: 10px;
+    top: 12px;
 }
 
 .modal-report-user img#cancel-report-user {
@@ -232,9 +239,9 @@ div.modal-report-user {
     left: auto;
     top: 0;
     cursor: pointer;
-    width: 15px;
-    height: 15px;
-    margin: 10px;
+    width: 16px;
+    height: 16px;
+    margin: 12px;
 }
 
 .modal-report-user button {
@@ -242,24 +249,24 @@ div.modal-report-user {
     top: 450px;
     left: calc(50% - 50px);
     width: 100px;
-    border: 1px solid black;
-    background-color: #00000000;
-    color: #ffda01;
-    border-radius: 15px;
-    padding: 10px 30px;
+    border: 1px solid #FEEEB3;
+    background-color: #322B0D;
+    color: #FEEEB3;
+    border-radius: 10vh;
+    padding: 12px 30px;
     transition: all 0.2s ease;
 }
 .modal-report-user button:hover {
     cursor: pointer;
-    background-color: #ffda01;
-    color: black;
-    border: 1px solid black;
+    background-color: #FEEEB3;
+    color: #121113;
+    border: 1px solid #121113;
     transform: scale(1.1);
 }
 
 .modal-report-user p#title-report-user {
     font-size: 30px;
-    color: white;
+    color: #FEEEB3;
     position: absolute;
     top: 30px;
     width: 100%;
@@ -268,7 +275,7 @@ div.modal-report-user {
 
 .modal-report-user p#body-report-user {
     font-size: 24px;
-    color: white;
+    color: #FEEEB3;
     position: absolute;
     top: 70px;
     width: 100%;
@@ -284,7 +291,7 @@ div.modal-report-user {
     top: 0;
     width: 220px;
     height: 100%;
-    background-color: #333333;
+    background-color: #C4B7FF60;
     padding: 20px;
     transition: all 0.5s ease;
 }
@@ -296,12 +303,12 @@ div.modal-report-user {
     cursor: pointer;
     height: 50px;
     width: 50px;
-    background-color: #2d2d2dba;
+    background-color: #1F1B33;
     position: absolute;
     top: calc(50% - 25px);
     margin-left: 315px;
     border-radius: 50%;
-    border: none;
+    border: #C4B7FF auto 4px;
     transition: all 0.5s ease;
 }
 .discussion .active-btn.active {
@@ -314,13 +321,13 @@ div.modal-report-user {
 .discussion .active-btn img {
     width: 26px;
     height: 26px;
-    margin: 13px 5px;
+    margin: 12px 4px;
 }
 
 .discussion .close-btn {
     position: absolute;
     top: 0;
-    right: 10px;
+    right: 12px;
     background: none;
     border: none;
     cursor: pointer;
@@ -331,38 +338,38 @@ div.modal-report-user {
 }
 
 .discussion p {
-    color: white;
+    color: #F7F7F9;
     font-size: 22px;
-    padding-left: 10px;
+    padding-left: 12px;
     margin: 0;
 }
 
 .discussion .participants {
     height: 200px;
-    margin: 10px 0;
+    margin: 12px 0;
 }
 
 .discussion .participants .participant {
     display: flex;
-    margin: 5px 10px;
-    background-color: #ffffff69;
+    margin: 5px 12px;
+    background-color: #C8C7D2;
     padding: 5px;
-    border-radius: 15px;
+    border-radius: 10vh;
     cursor: pointer;
 }
 
 .discussion .participants .participant:hover {
-    background-color: #ffffff;
+    background-color: #F7F7F9;
 }
 .discussion .participants .participant:hover p {
-    color: black;
+    color: #121113;
 }
 
 .discussion .participants .participant:before {
     content: "";
-    height: 10px;
-    width: 10px;
-    background-color: #1e7e34;
+    height: 12px;
+    width: 12px;
+    background-color: #2CC082;
     position: absolute;
     margin-left: 18px;
     border-radius: 50%;
@@ -376,20 +383,20 @@ div.modal-report-user {
 
 .discussion .participants .participant p {
     font-size: 16px;
-    margin-left: 10px;
+    margin-left: 12px;
     margin-top: 2px;
 }
 
 .discussion .participants .participant button.report-btn {
     cursor: pointer;
     position: absolute;
-    background-color: #2d2d2dba;
+    background-color: #4C241D;
     right: 34px;
     margin: 0;
     padding: 2px 0;
-    border-radius: 15px;
+    border-radius: 10vh;
     border: none;
-    color: white;
+    color: #FFD6CF;
     width: 0;
     overflow: hidden;
     transition: all 0.5s ease;
@@ -409,7 +416,7 @@ div.modal-report-user {
 }
 
 .discussion .messages h2 {
-    color: white;
+    color: #F7F7F9;
 }
 
 .discussion .messages .message {
@@ -429,18 +436,18 @@ div.modal-report-user {
 }
 
 .discussion .messages .message p.body {
-    color: white;
+    color: #F7F7F9;
     font-size: 16px;
     overflow: hidden;
-    white-space: pre-wrap;
+    space: pre-wrap;
     word-wrap: break-word;
 }
 .discussion .messages .message p a {
-    color: white;
+    color: #F7F7F9;
 }
 
 .discussion .messages .message p a:visited {
-    color: white;
+    color: #F7F7F9;
 }
 
 .discussion .send-message {
@@ -448,7 +455,7 @@ div.modal-report-user {
     bottom: 45px;
     width: 200px;
     height: 26px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .discussion .send-message input {
@@ -456,22 +463,22 @@ div.modal-report-user {
     width: calc(100% - 20px);
     height: 30px;
     background-color: #171717;
-    color: white;
-    border-radius: 10px;
+    color: #F7F7F9;
+    border-radius: 12px;
     border: none;
     padding: 6px;
 }
 
 .discussion .send-message img {
     position: absolute;
-    margin-right: 10px;
+    margin-right: 12px;
     width: 20px;
     height: 20px;
-    background-color: #ffffff69;
+    background-color: #F7F7F969;
 }
 
 .discussion .send-message img:hover {
-    background-color: #ffffff;
+    background-color: #F7F7F9;
 }
 
 /** Action button **/
@@ -498,25 +505,25 @@ div.action.danger {
 
 div.action p.action-body {
     cursor: pointer;
-    padding: 10px;
-    background-color: #2d2d2dba;
+    padding: 12px;
+    background-color: #5E5973;
     color: #fff;
     font-size: 14px;
     font-weight: 500;
     text-align: center;
     max-width: 350px;
     margin-left: calc(50% - 175px);
-    border-radius: 15px;
+    border-radius: 10vh;
 }
 
 div.action.warning p.action-body {
-    background-color: #ff9800eb;
-    color: #000;
+    background-color: #FEF2C6;
+    color: #4C4014;
 }
 
 div.action.danger p.action-body {
-    background-color: #da0000e3;
-    color: #000;
+    background-color: #FFD6CF;
+    color: #4C241D;
 }
 
 @keyframes mymove {
@@ -594,25 +601,25 @@ div.emoji-picker {
     .emoji-picker__emoji {
         @apply transition-all rounded;
         &:focus, &:hover {
-            @apply bg-white/10;
+            @apply bg-#F7F7F9/10;
         }
     }
     .emoji-picker__emojis {
         h2.emoji-picker__category-name {
-            @apply text-xs uppercase text-white/50 pl-3 font-normal first:mt-3;
+            @apply text-xs uppercase text-#F7F7F9/50 pl-3 font-normal first:mt-3;
         }
     }
     .emoji-picker__search-container {
         @apply flex items-center;
         .emoji-picker__search {
-            @apply pl-4 bg-white/10 border-none placeholder:text-white/50;
+            @apply pl-4 bg-#F7F7F9/10 border-none placeholder:text-#F7F7F9/50;
         }
         .emoji-picker__search-icon {
             @apply static px-3 opacity-20;
         }
     }
     .emoji-picker__category-buttons {
-        @apply m-0 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-white/20;
+        @apply m-0 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-#F7F7F9/20;
     }
 }
 
@@ -701,12 +708,12 @@ div.emoji-picker {
 .say-bubble::after {
     content: '';
     position: absolute;
-    bottom: -10px;
+    bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
     border-width: 5px;
     border-style: solid;
-    border-color: rgba(255, 255, 255, 0.80) transparent transparent transparent;
+    border-color: #C1BFCC90 transparent transparent transparent;
 }
 
 .thinking-cloud {
@@ -731,7 +738,7 @@ div.emoji-picker {
     height: 100%;
     filter: blur(5px);
     backdrop-filter: blur(12px);
-    background-color: rgb(255, 255, 255);
+    background-color: #D8D7DF80;
     z-index: -1;
     filter: url(#cloudy-filter);
 }
@@ -741,7 +748,7 @@ div.emoji-picker {
     width: 100%;
     font-family: "Comic Sans MS", "Comic Sans", cursive;
     font-size: 12px;
-    color: #000000;
+    color: #121113;
     text-align: center;
 }
 
@@ -757,15 +764,15 @@ div.emoji-picker {
 }
 
 .circle {
-    background-color: #ffffff;
+    background-color: #F7F7F9;
     opacity: 1; 
     filter: blur(0.5px); 
     border-radius: 50%;
 }
 
 .circle1 {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     transform: translateX(calc(7px));
 }
 
