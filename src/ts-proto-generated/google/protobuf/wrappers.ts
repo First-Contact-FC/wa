@@ -36,7 +36,7 @@ export interface FloatValue {
  */
 export interface Int64Value {
   /** The int64 value. */
-  value: number;
+  value: string;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface Int64Value {
  */
 export interface UInt64Value {
   /** The uint64 value. */
-  value: number;
+  value: string;
 }
 
 /**
@@ -216,12 +216,12 @@ export const FloatValue: MessageFns<FloatValue> = {
 };
 
 function createBaseInt64Value(): Int64Value {
-  return { value: 0 };
+  return { value: "0" };
 }
 
 export const Int64Value: MessageFns<Int64Value> = {
   encode(message: Int64Value, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.value !== 0) {
+    if (message.value !== "0") {
       writer.uint32(8).int64(message.value);
     }
     return writer;
@@ -239,7 +239,7 @@ export const Int64Value: MessageFns<Int64Value> = {
             break;
           }
 
-          message.value = longToNumber(reader.int64());
+          message.value = reader.int64().toString();
           continue;
         }
       }
@@ -252,13 +252,13 @@ export const Int64Value: MessageFns<Int64Value> = {
   },
 
   fromJSON(object: any): Int64Value {
-    return { value: isSet(object.value) ? globalThis.Number(object.value) : 0 };
+    return { value: isSet(object.value) ? globalThis.String(object.value) : "0" };
   },
 
   toJSON(message: Int64Value): unknown {
     const obj: any = {};
-    if (message.value !== 0) {
-      obj.value = Math.round(message.value);
+    if (message.value !== "0") {
+      obj.value = message.value;
     }
     return obj;
   },
@@ -268,18 +268,18 @@ export const Int64Value: MessageFns<Int64Value> = {
   },
   fromPartial<I extends Exact<DeepPartial<Int64Value>, I>>(object: I): Int64Value {
     const message = createBaseInt64Value();
-    message.value = object.value ?? 0;
+    message.value = object.value ?? "0";
     return message;
   },
 };
 
 function createBaseUInt64Value(): UInt64Value {
-  return { value: 0 };
+  return { value: "0" };
 }
 
 export const UInt64Value: MessageFns<UInt64Value> = {
   encode(message: UInt64Value, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.value !== 0) {
+    if (message.value !== "0") {
       writer.uint32(8).uint64(message.value);
     }
     return writer;
@@ -297,7 +297,7 @@ export const UInt64Value: MessageFns<UInt64Value> = {
             break;
           }
 
-          message.value = longToNumber(reader.uint64());
+          message.value = reader.uint64().toString();
           continue;
         }
       }
@@ -310,13 +310,13 @@ export const UInt64Value: MessageFns<UInt64Value> = {
   },
 
   fromJSON(object: any): UInt64Value {
-    return { value: isSet(object.value) ? globalThis.Number(object.value) : 0 };
+    return { value: isSet(object.value) ? globalThis.String(object.value) : "0" };
   },
 
   toJSON(message: UInt64Value): unknown {
     const obj: any = {};
-    if (message.value !== 0) {
-      obj.value = Math.round(message.value);
+    if (message.value !== "0") {
+      obj.value = message.value;
     }
     return obj;
   },
@@ -326,7 +326,7 @@ export const UInt64Value: MessageFns<UInt64Value> = {
   },
   fromPartial<I extends Exact<DeepPartial<UInt64Value>, I>>(object: I): UInt64Value {
     const message = createBaseUInt64Value();
-    message.value = object.value ?? 0;
+    message.value = object.value ?? "0";
     return message;
   },
 };
@@ -657,17 +657,6 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
-  }
-  return num;
-}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
