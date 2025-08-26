@@ -39,8 +39,11 @@
     "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
     /* Module Resolution Options */
     "moduleResolution": "node", /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-    // "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
-    // "paths": {
+      "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
+      "paths": {
+        "@workadventure/messages": ["../src/ts-proto-generated"]
+        //home/team/git/stage/back/tsconfig.json
+      },
     //   "_Controller/*": [
     //     "src/Controller/*"
     //   ],

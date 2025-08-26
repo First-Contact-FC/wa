@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
+    "paths": {
+      "@workadventure/messages": ["../src/ts-proto-generated"]
+    },
     "allowSyntheticDefaultImports": true,
   }
 }

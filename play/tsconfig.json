@@ -28,8 +28,10 @@
     // generated source code references. This allows Sentry to match source files
     // relative to your source root folder.
     "sourceRoot": "/",
+    "baseUrl": ".", 
     "paths": {
-      "@wa-icons": ["./src/front/Components/Icons.ts"]
+      "@wa-icons": ["./src/front/Components/Icons.ts"],
+      "@workadventure/messages": ["../src/ts-proto-generated"]
     }
   },
   "exclude": [

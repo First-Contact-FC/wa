@@ -27,6 +27,11 @@
     "composite": true,
     "declarationMap": true,
 
+    "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
+    "paths": {
+      "@workadventure/messages": ["../../src/ts-proto-generated"]
+    },
+
     "lib": ["es2022"]
   },
     "include": ["src/**/*.ts"],

@@ -115,7 +115,11 @@ We need to configure Typescript, using a `tsconfig.json` file.
       "ESNext",
       "DOM"
     ],
-    "allowJs": true,
+    // "allowJs": true,
+    // "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
+    // "paths": {
+    //   "@workadventure/messages": ["../libs/messages/src/ts-proto-generated"]
+    // },
     "moduleResolution": "Node",
     "strict": true,
     "noImplicitAny": true,

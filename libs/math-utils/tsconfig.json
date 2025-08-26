@@ -2,7 +2,10 @@
     "compilerOptions": {
       "rootDir": "src",
       "outDir": "dist",
-      "baseUrl": "./",
+      "baseUrl": ".",                           /* "BaseUrl" : "./" */
+      "paths": {
+        "@workadventure/messages": ["../../src/ts-proto-generated"]
+      },
       "target": "es2020",
       "lib": [
         "es2020",

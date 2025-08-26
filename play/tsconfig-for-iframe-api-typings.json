@@ -5,6 +5,10 @@
         "outDir": "./packages/iframe-api-typings/",
         "declaration": true,
         "emitDeclarationOnly": true,
+        "baseUrl": ".",                           /* Base directory to resolve non-absolute module names. */
+        "paths": {
+        "@workadventure/messages": ["../src/ts-proto-generated"]
+        },
         "types": ["phaser", "node"]
     },
     "include": ["src/iframe_api.ts"],
