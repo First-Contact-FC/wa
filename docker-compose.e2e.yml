@@ -37,6 +37,9 @@ services:
       WOKA_SPEED: 27
     labels:
       - "traefik.enable=true"
+      - "traefik.http.middlewares.play-auth.forwardauth.address=https://api.cometofc.com/api/auth/wa-gate-staging"
+      - "traefik.http.middlewares.play-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.routers.play.middlewares=play-auth@docker"
       - "traefik.http.routers.play.rule=Host(`play.workadventure.localhost`)"
       - "traefik.http.routers.play.entryPoints=web"
       - "traefik.http.services.play.loadbalancer.server.port=3000"
