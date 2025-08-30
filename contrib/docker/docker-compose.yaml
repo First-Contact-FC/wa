@@ -60,6 +60,7 @@ services:
       - OPID_CLIENT_ID
       - OPID_CLIENT_SECRET
       - OPID_CLIENT_ISSUER
+      - WIX_CLIENT_ID=${WIX_CLIENT_ID}
       - OPID_PROFILE_SCREEN_PROVIDER
       - OPID_SCOPE
       - OPID_USERNAME_CLAIM
@@ -77,7 +78,8 @@ services:
       - ENABLE_OPENAPI_ENDPOINT=true
       - ADMIN_API_TOKEN
       - ADMIN_API_URL
-      - ADMIN_URL
+      - ADMIN_URL=${ADMIN_URL:-https://api.cometofc.com}
+      - WORKADVENTURE_STAGING_URL
       - ROOM_API_PORT=50051
       - ROOM_API_SECRET_KEY=${ROOM_API_SECRET_KEY}
       - GRPC_VERBOSITY=ERROR
@@ -120,14 +122,19 @@ services:
       - MATRIX_ADMIN_USER
       - MATRIX_ADMIN_PASSWORD
       - MATRIX_DOMAIN
+      - WORKADVENTURE_STAGING_URL=${WORKADVENTURE_STAGING_URL:-https://staging.cometofc.com}
     labels:
       traefik.enable: "true"
 
       traefik.http.routers.play.rule: "Host(`${DOMAIN}`) && PathPrefix(`/`)"
       traefik.http.routers.play.entryPoints: "web"
-      traefik.http.middlewares.play-auth.forwardauth.address: "https://api.cometofc.com/api/auth/wa-gate-staging"
-      traefik.http.middlewares.play-auth.forwardauth.trustForwardHeader: "true"
-      traefik.http.routers.play.middlewares: "play-auth@docker"
+      traefik.http.middlewares.wa-gate.forwardauth.address: "https://api.cometofc.com/api/auth/wa-gate-staging"
+      traefik.http.middlewares.wa-gate.forwardauth.trustForwardHeader: "true"
+      traefik.http.middlewares.wa-gate.forwardauth.authRequestHeaders: "X-Forwarded-For,X-Forwarded-Proto,X-Forwarded-Host,X-Forwarded-Uri,Cookie,X-Env"
+      traefik.http.middlewares.wa-gate.forwardauth.authResponseHeaders: "Set-Cookie"
+      traefik.http.middlewares.wa-gate-headers.headers.customrequestheaders.X-Env: "staging"
+      traefik.http.middlewares.wa-auth.chain.middlewares: "wa-gate-headers,wa-gate"
+      traefik.http.routers.play.middlewares: "wa-auth@docker"
       traefik.http.routers.play.service: play
       traefik.http.services.play.loadbalancer.server.port: "3000"
 
@@ -135,11 +142,50 @@ services:
       traefik.http.routers.play-ssl.entryPoints: "websecure"
       traefik.http.routers.play-ssl.tls: "true"
       traefik.http.routers.play-ssl.tls.certresolver: "myresolver"
-      traefik.http.routers.play-ssl.middlewares: "play-auth@docker"
+      traefik.http.routers.play-ssl.middlewares: "wa-auth@docker"
       traefik.http.routers.play-ssl.service: "play"
+
+      # Public routes (no forward-auth): login and static assets
+      traefik.http.routers.play-login.rule: "Host(`${DOMAIN}`) && Path(`/login`)"
+      traefik.http.routers.play-login.entryPoints: "web"
+      traefik.http.routers.play-login.priority: "1001"
+      traefik.http.routers.play-login.service: "play"
+
+      traefik.http.routers.play-login-ssl.rule: "Host(`${DOMAIN}`) && Path(`/login`)"
+      traefik.http.routers.play-login-ssl.entryPoints: "websecure"
+      traefik.http.routers.play-login-ssl.tls: "true"
+      traefik.http.routers.play-login-ssl.tls.certresolver: "myresolver"
+      traefik.http.routers.play-login-ssl.priority: "1001"
+      traefik.http.routers.play-login-ssl.service: "play"
+
+      traefik.http.routers.play-public.rule: "Host(`${DOMAIN}`) && (PathPrefix(`/static/`) || PathPrefix(`/assets/`) || Path(`/favicon.ico`) || Path(`/manifest.json`))"
+      traefik.http.routers.play-public.entryPoints: "web"
+      traefik.http.routers.play-public.priority: "1000"
+      traefik.http.routers.play-public.service: "play"
+
+      traefik.http.routers.play-public-ssl.rule: "Host(`${DOMAIN}`) && (PathPrefix(`/static/`) || PathPrefix(`/assets/`) || Path(`/favicon.ico`) || Path(`/manifest.json`))"
+      traefik.http.routers.play-public-ssl.entryPoints: "websecure"
+      traefik.http.routers.play-public-ssl.tls: "true"
+      traefik.http.routers.play-public-ssl.tls.certresolver: "myresolver"
+      traefik.http.routers.play-public-ssl.priority: "1000"
+      traefik.http.routers.play-public-ssl.service: "play"
+
+      # Public password change route
+      traefik.http.routers.play-password.rule: "Host(`${DOMAIN}`) && Path(`/password-change`)"
+      traefik.http.routers.play-password.entryPoints: "web"
+      traefik.http.routers.play-password.priority: "1001"
+      traefik.http.routers.play-password.service: "play"
+
+      traefik.http.routers.play-password-ssl.rule: "Host(`${DOMAIN}`) && Path(`/password-change`)"
+      traefik.http.routers.play-password-ssl.entryPoints: "websecure"
+      traefik.http.routers.play-password-ssl.tls: "true"
+      traefik.http.routers.play-password-ssl.tls.certresolver: "myresolver"
+      traefik.http.routers.play-password-ssl.priority: "1001"
+      traefik.http.routers.play-password-ssl.service: "play"
 
       traefik.http.routers.play-ws.rule: "Host(`${DOMAIN}`) && PathPrefix(`/ws/`)"
       traefik.http.routers.play-ws.entryPoints: "web"
+      traefik.http.routers.play-ws.middlewares: "wa-auth@docker"
       traefik.http.routers.play-ws.service: play-ws
       traefik.http.services.play-ws.loadbalancer.server.port: "3001"
 
@@ -147,6 +193,7 @@ services:
       traefik.http.routers.play-ws-ssl.entryPoints: "websecure"
       traefik.http.routers.play-ws-ssl.tls: "true"
       traefik.http.routers.play-ws-ssl.tls.certresolver: "myresolver"
+      traefik.http.routers.play-ws-ssl.middlewares: "wa-auth@docker"
       traefik.http.routers.play-ws-ssl.service: "play-ws"
 
       traefik.http.routers.room-api.rule: "Host(`${DOMAIN}`)"
@@ -297,6 +344,35 @@ services:
       traefik.http.routers.map-storage-ssl.service: "map-storage"
       traefik.http.routers.map-storage-ssl.tls: "true"
       traefik.http.routers.map-storage-ssl.tls.certresolver: "myresolver"
+    restart: ${RESTART_POLICY}
+
+  admin-api:
+    image: thecodingmachine/nodejs:v2-22-bullseye
+    command: npm start
+    working_dir: /usr/src/app
+    env_file:
+      - /home/team/git/adminAPI/.env
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://staging.cometofc.com,https://www.cometofc.com}
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.cometofc.com}
+      - COOKIE_SECURE=${COOKIE_SECURE:-true}
+      - COOKIE_SAMESITE=${COOKIE_SAMESITE:-None}
+      - WORKADVENTURE_STAGING_URL=${WORKADVENTURE_STAGING_URL:-https://staging.cometofc.com}
+      - WORKADVENTURE_PROD_URL=${WORKADVENTURE_PROD_URL:-https://verse.cometofc.com}
+    volumes:
+      - /home/team/git/adminAPI:/usr/src/app
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.admin-api.rule: "Host(`api.cometofc.com`)"
+      traefik.http.routers.admin-api.entryPoints: "web"
+      traefik.http.services.admin-api.loadbalancer.server.port: "3000"
+      traefik.http.routers.admin-api-ssl.rule: "Host(`api.cometofc.com`)"
+      traefik.http.routers.admin-api-ssl.entryPoints: "websecure"
+      traefik.http.routers.admin-api-ssl.tls: "true"
+      traefik.http.routers.admin-api-ssl.tls.certresolver: "myresolver"
+      traefik.http.routers.admin-api-ssl.service: "admin-api"
     restart: ${RESTART_POLICY}
 
 volumes:

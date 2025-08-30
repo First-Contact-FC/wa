@@ -25,6 +25,8 @@ const debug = Debug("pusher:requests");
 export class FrontController extends BaseHttpController {
     private indexFile: string;
     private redirectToAdminFile: string;
+    private loginFile: string;
+    private passwordChangeFile: string;
     private script: Promise<string> | undefined;
 
     constructor(protected app: Application) {
@@ -54,6 +56,29 @@ export class FrontController extends BaseHttpController {
 
         this.indexFile = fs.readFileSync(indexPath, "utf8");
         this.redirectToAdminFile = fs.readFileSync(redirectToAdminPath, "utf8");
+
+        // Load login page
+        let loginPath: string;
+        if (fs.existsSync("dist/public/login.html")) {
+            loginPath = "dist/public/login.html";
+        } else if (fs.existsSync("login.html")) {
+            loginPath = "login.html";
+        } else {
+            // Fallback to index if missing, but this should not happen
+            loginPath = indexPath;
+        }
+        this.loginFile = fs.readFileSync(loginPath, "utf8");
+
+        // Load password reset callback page
+        let passwordChangePath: string;
+        if (fs.existsSync("dist/public/password-change.html")) {
+            passwordChangePath = "dist/public/password-change.html";
+        } else if (fs.existsSync("password-change.html")) {
+            passwordChangePath = "password-change.html";
+        } else {
+            passwordChangePath = indexPath;
+        }
+        this.passwordChangeFile = fs.readFileSync(passwordChangePath, "utf8");
 
         // Pre-parse the index file for speed (and validation)
         Mustache.parse(this.indexFile);
@@ -173,7 +198,23 @@ export class FrontController extends BaseHttpController {
 
         this.app.get("/login", (req: Request, res: Response) => {
             debug(`FrontController => [${req.method}] ${req.originalUrl} — IP: ${req.ip} — Time: ${Date.now()}`);
-            return this.displayFront(req, res, this.getFullUrl(req));
+            const wixClientId = process.env.WIX_CLIENT_ID || process.env.OPID_CLIENT_ID || "";
+            const adminApiBase = process.env.ADMIN_URL || "https://api.cometofc.com";
+            const defaultRedirect = process.env.WORKADVENTURE_STAGING_URL || "https://staging.cometofc.com";
+            const html = Mustache.render(this.loginFile, {
+                wixClientId,
+                adminApiBase,
+                defaultRedirect,
+                passwordResetUri: `${defaultRedirect}/password-change`,
+            });
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            return res.status(200).send(html);
+        });
+
+        this.app.get("/password-change", (req: Request, res: Response) => {
+            debug(`FrontController => [${req.method}] ${req.originalUrl} — IP: ${req.ip} — Time: ${Date.now()}`);
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            return res.status(200).send(this.passwordChangeFile);
         });
 
         // @deprecated

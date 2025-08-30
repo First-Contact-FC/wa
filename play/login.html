@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in to FCverse</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; display: grid; place-items: center; min-height: 100vh; background: #0b0f1a; color: #e6e9ef; }
+    .card { width: 92%; max-width: 420px; background: #11172a; border: 1px solid #242b42; border-radius: 12px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    label { display: block; margin: 10px 0 4px; font-size: 14px; color: #cbd5e1; }
+    input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2b3352; background: #0b1222; color: #e6e9ef; }
+    button { width: 100%; margin-top: 12px; padding: 10px 12px; border: 0; border-radius: 8px; background: #6d76ff; color: white; font-weight: 600; cursor: pointer; }
+    button[disabled] { opacity: .6; cursor: default; }
+    .muted { color: #aab4cf; font-size: 13px; }
+    .error { color: #ff6d6d; margin-top: 10px; font-size: 14px; display:none; }
+    .success { color: #4ade80; margin-top: 10px; font-size: 14px; display:none; }
+    .link { color: #86b7ff; text-decoration: underline; cursor: pointer; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="auto" style="display:none; text-align:center;">
+      <div style="display:inline-block;width:24px;height:24px;border:3px solid #2b3352;border-top-color:#6d76ff;border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <p class="muted" style="margin-top:10px;" id="autoMsg">Checking your session…</p>
+    </div>
+
+    <div id="form">
+      <h1>Sign in to FCverse</h1>
+      <p class="muted">Use your FC account email and password.</p>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+
+      <button id="loginBtn">Sign in</button>
+      <p class="muted" style="margin-top:8px;">
+        <span id="forgot" class="link">Forgot password?</span>
+      </p>
+
+      <p id="fallback" class="muted" style="display:none;">
+        No room specified. <a id="continueLink" class="link" href="#">Enter FCverse</a>
+      </p>
+
+      <div id="error" class="error"></div>
+      <div id="success" class="success"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Dynamic imports from CDN for Wix SDK
+    import { createClient, OAuthStrategy } from 'https://unpkg.com/@wix/sdk@1.15.27?module';
+    import { members } from 'https://unpkg.com/@wix/members@1.0.282?module';
+
+    const wixClientId = {{#wixClientId}}"{{{wixClientId}}}"{{/wixClientId}}{{^wixClientId}}""{{/wixClientId}};
+    const adminApiBase = {{#adminApiBase}}"{{{adminApiBase}}}"{{/adminApiBase}}{{^adminApiBase}}"https://api.cometofc.com"{{/adminApiBase}};
+    const defaultRedirect = {{#defaultRedirect}}"{{{defaultRedirect}}}"{{/defaultRedirect}}{{^defaultRedirect}}"https://staging.cometofc.com"{{/defaultRedirect}};
+    const passwordResetUri = {{#passwordResetUri}}"{{{passwordResetUri}}}"{{/passwordResetUri}}{{^passwordResetUri}}(defaultRedirect+"/password-change"){{/passwordResetUri}};
+
+    const qs = new URLSearchParams(location.search);
+    const hasRedirect = qs.has('redirect');
+    const redirectUrl = hasRedirect ? decodeURIComponent(qs.get('redirect')) : defaultRedirect;
+
+    const $ = (id) => document.getElementById(id);
+    const setError = (t) => { const el = $('error'); if (el) { el.textContent = t; el.style.display = t ? 'block' : 'none'; }};
+    const setSuccess = (t) => { const el = $('success'); if (el) { el.textContent = t; el.style.display = t ? 'block' : 'none'; }};
+    const setLoading = (loading) => { const b = $('loginBtn'); if (b) b.disabled = !!loading; };
+    const showAuto = (msg = 'Already signed in. Taking you to FCverse…') => { const a=$('auto'); const f=$('form'); if (a&&f){ a.style.display='block'; f.style.display='none'; } const m=$('autoMsg'); if (m) m.textContent=msg; };
+    const showForm = () => { const a=$('auto'); const f=$('form'); if (a&&f){ a.style.display='none'; f.style.display='block'; } };
+    const STORAGE_KEY = 'wix_tokens';
+
+    // Init Wix client
+    const wix = createClient({
+      modules: { members },
+      auth: OAuthStrategy({ clientId: wixClientId })
+    });
+
+    // Wire fallback link when no redirect param
+    (function setupFallbackLink(){
+      const fb = $('fallback');
+      const a = $('continueLink');
+      if (!hasRedirect && fb && a) {
+        fb.style.display = 'block';
+        a.href = defaultRedirect;
+      }
+    })();
+
+    // Try to restore session from stored tokens
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved && saved.refreshToken) {
+        wix.auth.setTokens(saved);
+      }
+    } catch {}
+
+    // If already logged in with Wix, mint the gate cookie and continue
+    (async () => {
+      try {
+        if (wix.auth.loggedIn()) {
+          showAuto('Already signed in. Taking you to FCverse…');
+          const { member } = await wix.members.getCurrentMember();
+          await mintCookieAndRedirect(member?.email);
+          return;
+        }
+        // Not logged in, show form
+        showForm();
+      } catch (_) { /* ignore and keep form visible */ }
+    })();
+
+    $('forgot').addEventListener('click', async () => {
+      const email = $('email').value.trim();
+      if (!email) { setError('Enter your email to reset password.'); return; }
+      setError(''); setSuccess('Sending password reset email…'); setLoading(true);
+      try {
+        await wix.auth.sendPasswordResetEmail(email, passwordResetUri);
+        setSuccess('Password reset email sent. Check your inbox.');
+      } catch (e) {
+        setError('Could not send reset email.');
+      } finally { setLoading(false); }
+    });
+
+    $('loginBtn').addEventListener('click', async () => {
+      const email = $('email').value.trim();
+      const password = $('password').value;
+      if (!email || !password) { setError('Please enter both email and password.'); return; }
+      setError(''); setSuccess(''); setLoading(true);
+      try {
+        const res = await wix.auth.login({ email, password });
+        if (res.loginState !== 'SUCCESS') {
+          setError('Login failed. Check your credentials.'); setLoading(false); return;
+        }
+        const tokens = await wix.auth.getMemberTokensForDirectLogin(res.data.sessionToken);
+        wix.auth.setTokens(tokens);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tokens)); } catch {}
+
+        // Get member info (email)
+        const { member } = await wix.members.getCurrentMember();
+        const memberEmail = member?.email || email;
+        await mintCookieAndRedirect(memberEmail);
+      } catch (e) {
+        setError('Login error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    async function mintCookieAndRedirect(memberEmail) {
+      // Mint WorkAdventure access cookie
+      const r = await fetch(`${adminApiBase}/api/auth/wa-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: memberEmail, environment: 'staging', redirectUrl })
+      });
+
+      if (r.redirected) {
+        window.location.href = redirectUrl; // ensure navigation
+        return;
+      }
+      if (r.ok) {
+        window.location.href = redirectUrl;
+      } else if (r.status === 403) {
+        const loc = r.headers.get('Location');
+        if (loc) { window.location.href = loc; return; }
+        setError('Access denied.');
+      } else {
+        setError('Authentication error.');
+      }
+    }
+  </script>
+</body>
+</html>

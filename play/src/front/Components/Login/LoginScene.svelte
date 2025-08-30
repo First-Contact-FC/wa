@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import type { Game } from "../../Phaser/Game/Game";
     import type { LoginScene } from "../../Phaser/Login/LoginScene";
     import { LoginSceneName } from "../../Phaser/Login/LoginScene";
@@ -88,6 +89,18 @@
         return gameManager.currentStartedRoom.backgroundColor;
     }
 
+    // Wix authentication iframe
+    let wixIframe: HTMLIFrameElement;
+    let wixAuthUrl = "https://api.cometofc.com/api/wix/workadventure-auth";
+
+    onMount(() => {
+        // Initialize Wix authentication iframe
+        if (wixIframe) {
+            wixIframe.src = wixAuthUrl;
+            console.log("🔍 Wix authentication iframe loaded:", wixAuthUrl);
+        }
+    });
+
     /* eslint-disable svelte/no-at-html-tags */
 </script>
 
@@ -157,6 +170,15 @@
         </section>
     {/if}
 </form>
+<!-- Wix Authentication Iframe (invisible) -->
+<iframe
+    bind:this={wixIframe}
+    src={wixAuthUrl}
+    style="position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none; opacity: 0; pointer-events: none;"
+    title="Wix Authentication"
+    allow="camera; microphone; geolocation"
+/>
+
 <div
     class="absolute left-0 top-0 w-full h-full z-20 bg-contrast opacity-80"
     style={getBackgroundColor() != undefined ? `background-color: ${getBackgroundColor()};` : ""}
