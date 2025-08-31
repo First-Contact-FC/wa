@@ -1,22 +1,61 @@
+# Environment files
 .env
+.env.local
+.env.*.local
+
+# IDE files
 .idea
-.vagrant
-Vagrantfile
-docker-compose.override.yaml
+.vscode/
+.cursor/
+*.code-workspace
+
+# Runtime data
+data/
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+coverage/
+.nyc_output/
+
+# OS files
 *.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# Secrets
+secrets/
+acme.json
+*.pem
+*.key
+*.crt
+
+# Dependencies
+node_modules
 maps/yarn.lock
+
+# Maps
 maps/dist/computer.js
 maps/dist/computer.js.map
-node_modules
-_
-*.code-workspace
+
+# Docker
+docker-compose.override.yaml
+
+# Vagrant
+.vagrant
+Vagrantfile
+
+# Lock files
 /install.lock
-.vscode/extensions.json
 
 # Helm
 # Chart dependencies
 **/charts/*.tgz
 
+# Synapse
 synapse/homeserver.log*
 synapse/matrix.workadventure.localhost.signing.key
 synapse/homeserver.db
@@ -24,4 +63,7 @@ synapse/homeserver.db-*
 synapse/homeserver.yaml
 synapse/media_store/*
 
+# Legacy entries
+_
+.vscode/extensions.json
 .vscode/settings.json
