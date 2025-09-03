@@ -1,2 +1,5 @@
 wa/*
 .env
+!.env.*.template
+!.env.example
+!.env.sample
