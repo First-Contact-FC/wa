@@ -35,3 +35,4 @@ npm run build
 
 echo "✅ Memory-optimized build completed successfully!"
 echo "📊 Build artifacts created in dist/ directory"
+
