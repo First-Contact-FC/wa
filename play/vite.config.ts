@@ -28,9 +28,41 @@ export default defineConfig(({ mode }) => {
         build: {
             sourcemap: env.GENERATE_SOURCEMAP !== "false",
             outDir: "./dist/public",
+            // Force smaller chunks to reduce memory usage
+            chunkSizeWarningLimit: 1000,
+            // Use esbuild for faster, less memory-intensive builds
+            minify: 'esbuild',
+            target: 'es2020',
+            // Reduce memory usage
+            cssCodeSplit: true,
+            reportCompressedSize: false,
             rollupOptions: {
                 plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],
                 //plugins: [inject({ Buffer: ["buffer/", "Buffer"] })],
+                output: {
+                    manualChunks: {
+                        // Core libraries
+                        vendor: ['svelte', 'phaser', 'svelte-select', 'svelte-modals'],
+                        // Matrix/communication
+                        matrix: ['@matrix-org/olm', 'matrix-js-sdk'],
+                        // UI components
+                        ui: ['svelte-select', 'svelte-modals', 'tailwindcss'],
+                        // Utilities
+                        utils: ['lodash', 'uuid', 'date-fns'],
+                        // Game specific
+                        game: ['phaser', 'phaser-animated-tiles'],
+                        // Map editor
+                        editor: ['@workadventure/map-editor']
+                    },
+                    // Reduce chunk size
+                    chunkFileNames: 'chunks/[name]-[hash].js',
+                    entryFileNames: 'entry-[hash].js',
+                    assetFileNames: 'assets/[name]-[hash].[ext]'
+                },
+                // Externalize Node modules that cause issues
+                external: ['fs', 'crypto', 'path', 'os'],
+                // Aggressive tree shaking
+                treeshake: 'recommended'
             },
         },
         plugins: [

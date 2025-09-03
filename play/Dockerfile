@@ -10,7 +10,7 @@ RUN npm run tag-version && npm run ts-proto
 
 # typescript build
 FROM --platform=$BUILDPLATFORM node:20.18-bullseye-slim AS builder
-ARG NODE_OPTIONS="--max-old-space-size=16384"
+ARG NODE_OPTIONS="--max-old-space-size=8192 --optimize-for-size --gc-interval=100"
 ARG FAST_BUILD=""
 WORKDIR /usr/src
 RUN apt-get update && apt-get install -y git
@@ -29,19 +29,21 @@ COPY --from=proto-builder /usr/libs/messages/src ./libs/messages/src
 COPY play ./play
 COPY --from=proto-builder /usr/src/generated play/src/messages/generated
 ENV NODE_ENV=production
+
+# Build in stages to reduce memory usage
 RUN --mount=type=secret,id=SENTRY_RELEASE \
     --mount=type=secret,id=SENTRY_URL \
     --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     --mount=type=secret,id=SENTRY_ORG \
     --mount=type=secret,id=SENTRY_PROJECT \
     --mount=type=secret,id=SENTRY_ENVIRONMENT \
-    export SENTRY_RELEASE=$(cat /run/secrets/SENTRY_RELEASE) && \
-    export SENTRY_URL=$(cat /run/secrets/SENTRY_URL) && \
-    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
-    export SENTRY_ORG=$(cat /run/secrets/SENTRY_ORG) && \
-    export SENTRY_PROJECT=$(cat /run/secrets/SENTRY_PROJECT) && \
-    export SENTRY_ENVIRONMENT=$(cat /run/secrets/SENTRY_ENVIRONMENT) && \
-    export NODE_OPTIONS="$NODE_OPTIONS" && \
+    export SENTRY_RELEASE=$(cat /run/secrets/SENTRY_RELEASE 2>/dev/null || echo "dev") && \
+    export SENTRY_URL=$(cat /run/secrets/SENTRY_URL 2>/dev/null || echo "") && \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || echo "") && \
+    export SENTRY_ORG=$(cat /run/secrets/SENTRY_ORG 2>/dev/null || echo "") && \
+    export SENTRY_PROJECT=$(cat /run/secrets/SENTRY_PROJECT 2>/dev/null || echo "") && \
+    export SENTRY_ENVIRONMENT=$(cat /run/secrets/SENTRY_ENVIRONMENT 2>/dev/null || echo "development") && \
+    export NODE_OPTIONS="--max-old-space-size=8192 --optimize-for-size --gc-interval=100" && \
     export DISABLE_LEGACY_BROWSERS="$FAST_BUILD" && \
     cd play && \
     npm run typesafe-i18n && \
