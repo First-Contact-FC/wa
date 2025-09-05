@@ -40,20 +40,15 @@ export default defineConfig(({ mode }) => {
                 plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],
                 //plugins: [inject({ Buffer: ["buffer/", "Buffer"] })],
                 output: {
-                    manualChunks: {
-                        // Core libraries
-                        vendor: ['svelte', 'phaser', 'svelte-select', 'svelte-modals'],
-                        // Matrix/communication
-                        matrix: ['@matrix-org/olm', 'matrix-js-sdk'],
-                        // UI components
-                        ui: ['svelte-select', 'svelte-modals', 'tailwindcss'],
-                        // Utilities
-                        utils: ['lodash', 'uuid', 'date-fns'],
-                        // Game specific
-                        game: ['phaser', 'phaser-animated-tiles'],
-                        // Map editor
-                        editor: ['@workadventure/map-editor']
-                    },
+                    // manualChunks disabled to avoid conflicts
+                    // manualChunks: {
+                    //     vendor: ['svelte'],
+                    //     matrix: ['@matrix-org/olm', 'matrix-js-sdk'],
+                    //     ui: ['svelte-select', 'svelte-modals', 'tailwindcss'],
+                    //     utils: ['lodash', 'uuid', 'date-fns'],
+                    //     game: ['phaser', 'phaser-animated-tiles'],
+                    //     editor: ['@workadventure/map-editor']
+                    // },
                     // Reduce chunk size
                     chunkFileNames: 'chunks/[name]-[hash].js',
                     entryFileNames: 'entry-[hash].js',

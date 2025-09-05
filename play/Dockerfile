@@ -1,6 +1,6 @@
 
 # protobuf build
-FROM --platform=$BUILDPLATFORM node:20.18-bullseye-slim AS proto-builder
+FROM --platform=linux/amd64 node:20.18-bullseye-slim AS proto-builder
 WORKDIR /usr/src
 COPY messages/package-lock.json messages/package.json ./
 RUN npm ci
@@ -9,8 +9,8 @@ COPY libs ./../libs
 RUN npm run tag-version && npm run ts-proto
 
 # typescript build
-FROM --platform=$BUILDPLATFORM node:20.18-bullseye-slim AS builder
-ARG NODE_OPTIONS="--max-old-space-size=8192 --optimize-for-size --gc-interval=100"
+FROM --platform=linux/amd64 node:20.18-bullseye-slim AS builder
+ARG NODE_OPTIONS="--max-old-space-size=8192"
 ARG FAST_BUILD=""
 WORKDIR /usr/src
 RUN apt-get update && apt-get install -y git
@@ -43,7 +43,8 @@ RUN --mount=type=secret,id=SENTRY_RELEASE \
     export SENTRY_ORG=$(cat /run/secrets/SENTRY_ORG 2>/dev/null || echo "") && \
     export SENTRY_PROJECT=$(cat /run/secrets/SENTRY_PROJECT 2>/dev/null || echo "") && \
     export SENTRY_ENVIRONMENT=$(cat /run/secrets/SENTRY_ENVIRONMENT 2>/dev/null || echo "development") && \
-    export NODE_OPTIONS="--max-old-space-size=8192 --optimize-for-size --gc-interval=100" && \
+    export NODE_OPTIONS="--max-old-space-size=8192 " && \
+    export FAST_BUILD="true" && \
     export DISABLE_LEGACY_BROWSERS="$FAST_BUILD" && \
     cd play && \
     npm run typesafe-i18n && \
