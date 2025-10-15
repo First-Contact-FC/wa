@@ -18,51 +18,27 @@ function closePopUp(){
     }
 }
 
-function checkNotifications() {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-
-  // Convert to IST (offset +5:30)
-  const istTime = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
-  const istHour = istTime.getUTCHours();
-
-  // Between 21:00 and 23:00 IST
-  if (istHour >= 21 && istHour < 23) {
-    triggerThemeNotifications();
-  }
-}
-
-function triggerThemeNotifications() {
-  // personal message with custom author ('System' here)
-  WA.chat.sendChatMessage(
-    "🔔 Reminder: Themed Hours are active now!",
-    "System"
-  );
-
-  // Map layer changes 
-  WA.room.showLayer("themed-hours-layer");
-
-  // Popup with today’s theme
-  WA.room.onEnterZone("pop", () => {
-    WA.chat.sendChatMessage("Welcome");
-    currentPopup = WA.ui.openPopup(
-      "popup1",
-      "Welcome to the special area! 🎉\nEnjoy your stay.",
-      []
-    );
-  });
-  WA.room.onLeaveZone("pop", () => {
-    if (currentPopup) {
-      currentPopup.close();
-      currentPopup = undefined;
+if (userIsAdmin) { // Replace with actual admin check
+  WA.ui.actionBar.addButton({
+    id: "announceBtn",
+    label: "Send Announcement",
+    tooltip: "Broadcast a public announcement",
+    callback: () => {
+      WA.event.broadcast("announcement", {
+        text: "🚨 Public Announcement: The event starts now!",
+        sender: "Admin"
+      });
     }
   });
-
 }
 
 if (window.WA?.onInit) {
-  WA.onInit().then(async () => {
-    checkNotifications()
+  WA.onInit().then(() => {
+  WA.event.on("announcement").subscribe((event) => {
+    const { text, sender } = event.data;
+    WA.chat.sendChatMessage(text, sender || "System");
+    // this is for showing a popup if needed
+    WA.ui.openPopup("announcementPopup", text, []);
   })
+})
 }
