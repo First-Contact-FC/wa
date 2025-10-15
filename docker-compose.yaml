@@ -29,20 +29,20 @@ services:
     restart: ${RESTART_POLICY}
 
   play:
-    # image: thecodingmachine/workadventure-play:${VERSION}
-    build:
-      context: ./play
-      dockerfile: Dockerfile
+    image: thecodingmachine/workadventure-play:${VERSION}
+    #build:
+    #  context: ./play
+    #  dockerfile: Dockerfile
     # image: workadventure-play:local
     environment:
       - DEBUG_MODE
       - JITSI_URL
       - JITSI_PRIVATE_MODE
       - ENABLE_MAP_EDITOR
-      - MAP_EDITOR_ALLOWED_USERS
-      - MAP_EDITOR_ALLOW_ALL_USERS
-      - PUSHER_URL=https://${DOMAIN}/
-      - ICON_URL=/icon
+      - MAP_EDITOR_ALLOWED_USERSv
+      - MAP_EDITOR_ALLOW_ALL_USERSv
+      - PUSHER_URL=https://${DOMAIN}/v
+      - ICON_URL=/iconv
       - TURN_SERVER
       - TURN_USER
       - TURN_PASSWORD
