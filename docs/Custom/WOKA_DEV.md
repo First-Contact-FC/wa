@@ -1,5 +1,14 @@
 # Development Section
 
+## Table of Content
+
+   - [File Structure](#file-structure)
+   - [Adding Complete Wokas](#adding-complete-wokas)
+   - [Adding Layer-Based Wokas](#adding-layer-based-wokas)
+   - [Updating woka.json](#updating-wokajson)
+   - [Testing Your Wokas](#testing-your-wokas)
+   - [Troubleshooting](#troubleshooting)
+
 ## File Structure
 
 WorkAdventure stores woka resources in the following locations:
