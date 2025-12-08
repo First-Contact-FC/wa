@@ -60,6 +60,9 @@ Each layer is a separate sprite sheet that gets composited together.
 
 The sprite sheet must be organized in a 3×4 grid as follows:
 
+<img width="96" height="128" alt="image" src="https://github.com/user-attachments/assets/137c6ce0-4391-44e4-9dfb-3f55d394fca5" />
+
+
 ```
 Frame Layout (3 columns × 4 rows):
 ┌─────┬─────┬─────┐
