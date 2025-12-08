@@ -2,6 +2,15 @@
 
 This guide provides step-by-step instructions to set up and run a local instance of WorkAdventure.
 
+## Table of Content:
+
+   - [File Structure](#file-structure)
+   - [Adding Complete Wokas](#adding-complete-wokas)
+   - [Adding Layer-Based Wokas](#adding-layer-based-wokas)
+   - [Updating woka.json](#updating-wokajson)
+   - [Testing Your Wokas](#testing-your-wokas)
+   - [Troubleshooting](#troubleshooting)
+
 ## Prerequisites
 
 - **Docker** and **Docker Compose** installed
