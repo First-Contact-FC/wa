@@ -6,21 +6,12 @@ This guide covers how to add completely new wokas (avatars) to WorkAdventure usi
 
 ## Table of Contents
 
-1. [Design Section](#design-section)
    - [Understanding Woka Structure](#understanding-woka-structure)
    - [Sprite Sheet Specifications](#sprite-sheet-specifications)
    - [Creating Sprite Sheets](#creating-sprite-sheets)
    - [Layer-Based Wokas](#layer-based-wokas)
    - [Complete Wokas](#complete-wokas)
    - [Design Tools & Resources](#design-tools--resources)
-
-2. [Development Section](#development-section)
-   - [File Structure](#file-structure)
-   - [Adding Complete Wokas](#adding-complete-wokas)
-   - [Adding Layer-Based Wokas](#adding-layer-based-wokas)
-   - [Updating woka.json](#updating-wokajson)
-   - [Testing Your Wokas](#testing-your-wokas)
-   - [Troubleshooting](#troubleshooting)
 
 ---
 
