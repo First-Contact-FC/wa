@@ -87,16 +87,43 @@ Frame Layout (3 columns × 4 rows):
 
 ### Step 1: Design Your Character
 
-1. **Choose Your Style:**
-   - Pixel art style (recommended for consistency)
-   - 16-bit RPG aesthetic matches WorkAdventure's theme
-   - Consider the existing woka art style for consistency
+1. **Art Style Requirements:**
+   - **Soft Pixel Style** - Our assets use a soft pixel aesthetic inspired by icograms
+   - Not completely soft/realistic, but softer than traditional hard pixel art
+   - Smooth color transitions and gentle shading
+   - Maintains pixelated structure while using softer edges and gradients
+   - Should match the visual style of our icograms assets
 
-2. **Design Considerations:**
+2. **Character Design Philosophy:**
+   
+   **Every avatar must meet ONE of these criteria:**
+   
+   **Option A: Creative Style & Movement**
+   - Unique artistic style that stands out
+   - Creative or innovative movement patterns
+   - Distinctive visual design that adds variety
+   - Experimental or artistic expression
+   
+   **Option B: Diversity & Inclusivity**
+   - Represents diversity in one or more of these areas:
+     - **Gender:** Various gender expressions and identities
+     - **Sexuality:** LGBTQ+ representation
+     - **Caste:** Representation across different social groups
+     - **Class:** Economic and social class diversity
+     - **Religion:** Various religious and cultural backgrounds
+     - **Race & Ethnicity:** Diverse racial and ethnic representation
+     - **Disability:** Visible disabilities, mobility aids, assistive devices
+   - Should be authentic and respectful representation
+   - Avoid stereotypes and tokenism
+
+3. **Design Considerations:**
    - Characters should face the camera (isometric view)
    - Keep details clear at 32×32 resolution
    - Use consistent lighting (top-left light source recommended)
    - Ensure transparency is used for backgrounds
+   - Soft pixel style: Use gentle gradients, smooth color transitions
+   - Avoid harsh pixel edges - use anti-aliasing where appropriate
+   - Match the softer aesthetic of icograms assets
 
 ### Step 2: Create the Sprite Sheet Grid
 
@@ -129,10 +156,16 @@ Frame Layout (3 columns × 4 rows):
 - Resolution: 96×128 pixels (exact)
 - Compression: None or minimal (for clarity)
 - Transparency: Enabled
+- **For Soft Pixel Style:** Preserve gradients and smooth transitions
 
 **File Naming Convention:**
 - Use descriptive, lowercase names with underscores
-- Examples: `my_character_v1.png`, `wizard_blue.png`, `ninja_red.png`
+- Include diversity indicators when applicable (e.g., `person_wheelchair.png`, `person_hijab.png`)
+- Examples: 
+  - `character_creative_style_v1.png`
+  - `person_wheelchair_red_shirt.png`
+  - `person_hijab_blue_dress.png`
+  - `person_cane_walking.png`
 
 ## Layer-Based Wokas
 
@@ -172,6 +205,7 @@ When creating layer-based wokas, each body part is a separate sprite sheet with 
 6. **Accessory Layer:**
    - Can be positioned anywhere
    - Common: glasses, masks, jewelry, held items
+   - **Diversity considerations:** Mobility aids (canes, wheelchairs), assistive devices, cultural accessories, religious symbols
    - Can be transparent/empty for no accessory
 
 ### Layer Compositing Order
@@ -188,6 +222,45 @@ Layers are rendered in this order (bottom to top):
 
 **Important:** Each layer should have proper transparency where it doesn't need to show.
 
+### Diversity in Layer-Based Wokas
+
+When creating layer-based wokas for diversity:
+
+1. **Body Layer:**
+   - Include diverse skin tones
+   - Various body types and shapes
+   - Different body proportions
+
+2. **Hair Layer:**
+   - Diverse hair textures (curly, straight, wavy, coily)
+   - Various hair lengths and styles
+   - Cultural hairstyles (braids, locs, buns, etc.)
+   - Hair colors across the spectrum
+
+3. **Clothes Layer:**
+   - Cultural and religious clothing (hijabs, turbans, saris, kimonos, etc.)
+   - Various styles and fashions
+   - Adaptive clothing options
+   - Class-representative clothing (avoid stereotypes)
+
+4. **Accessory Layer:**
+   - Mobility aids (wheelchairs, canes, walkers, crutches)
+   - Assistive devices (hearing aids, prosthetics, service animals)
+   - Cultural and religious accessories
+   - Glasses and other common accessories
+
+5. **Hat Layer:**
+   - Religious headwear (hijabs, turbans, kippahs, etc.)
+   - Cultural headwear
+   - Various hat styles
+
+**Best Practices:**
+- Research authentic representation
+- Avoid cultural appropriation
+- Consult with communities when possible
+- Represent intersectionality (e.g., disabled person of color wearing cultural clothing)
+- Ensure mobility aids are functional and realistic
+
 ## Complete Wokas
 
 ### When to Use Complete Wokas
@@ -196,10 +269,18 @@ Complete wokas are single sprite sheets containing the entire character. Use the
 - You have a pre-made character sprite sheet
 - The character doesn't need customization
 - You want a unique, fixed appearance
+- Creating diverse representations that need specific, integrated features
+- Designing characters with unique creative styles or movement patterns
 
 ### Creating Complete Wokas
 
 Follow the same sprite sheet specifications (96×128, 12 frames), but include all visual elements in a single sheet.
+
+**Diversity Considerations for Complete Wokas:**
+- Perfect for representing specific identities authentically
+- Allows for integrated features like mobility aids, cultural clothing, religious symbols
+- Can showcase unique creative styles with distinctive movement patterns
+- Ideal for characters that need cohesive, non-modular appearance
 
 ## Design Tools & Resources
 
@@ -209,56 +290,213 @@ Follow the same sprite sheet specifications (96×128, 12 frames), but include al
    - Professional pixel art editor
    - Built-in animation support
    - Excellent for sprite sheet creation
+   - Supports soft pixel techniques (gradients, anti-aliasing)
    - Website: https://www.aseprite.org/
 
 2. **GIMP** (Free)
    - Full-featured image editor
    - Grid and alignment tools
    - Good for compositing layers
+   - Excellent gradient and soft shading tools
    - Website: https://www.gimp.org/
 
 3. **Photoshop** (Paid)
    - Industry standard
    - Advanced features
-   - Good for detailed work
+   - Excellent for soft pixel work (gradients, filters, blending)
+   - Professional anti-aliasing tools
 
-4. **Piskel** (Free, Web-based)
+4. **Krita** (Free)
+   - Professional digital painting
+   - Great for soft pixel style
+   - Excellent gradient and brush tools
+   - Website: https://krita.org/
+
+5. **Piskel** (Free, Web-based)
    - Online pixel art editor
    - Simple and accessible
    - Website: https://www.piskelapp.com/
 
-5. **LibreSprite** (Free, Open Source)
+6. **LibreSprite** (Free, Open Source)
    - Aseprite alternative
    - Similar features
    - Website: https://libresprite.github.io/
 
+**Note:** For soft pixel style, tools with gradient and anti-aliasing capabilities (GIMP, Photoshop, Krita) are particularly useful.
+
 ### Design Resources
 
-- **Reference Sprites:** Check existing wokas in `play/public/resources/characters/pipoya/`
-- **Color Palettes:** Use consistent color schemes with existing wokas
-- **Animation Reference:** Study how existing wokas animate for consistency
+- **Reference Assets:** Study icograms assets for soft pixel style reference
+- **Color Palettes:** Use soft, harmonious color schemes
+- **Animation Reference:** Study existing wokas for movement patterns
+- **Diversity References:** Research authentic representation for diverse characters
 
 ### Design Best Practices
 
-1. **Consistency:**
-   - Match the art style of existing wokas
-   - Use similar color palettes
-   - Maintain consistent proportions
+1. **Soft Pixel Style:**
+   - Use gentle gradients instead of flat colors
+   - Apply soft shadows and highlights
+   - Smooth color transitions between shades
+   - Maintain pixel structure but with softer edges
+   - Use anti-aliasing for smoother appearance
+   - Avoid harsh, blocky pixel edges
 
-2. **Clarity:**
+2. **Diversity & Inclusivity:**
+   - Research authentic representation before designing
+   - Consult with communities when representing specific groups
+   - Avoid stereotypes and caricatures
+   - Include diverse body types, abilities, and appearances
+   - Represent intersectionality (e.g., disabled person of color)
+   - Use respectful and accurate cultural/religious symbols
+   - Consider mobility aids, assistive devices, and adaptive equipment
+
+3. **Creative Expression:**
+   - Experiment with unique movement patterns
+   - Try innovative visual styles
+   - Create distinctive character designs
+   - Push artistic boundaries while maintaining usability
+
+4. **Clarity:**
    - Ensure details are visible at 32×32
-   - Use high contrast for important features
-   - Avoid overly complex designs
+   - Use appropriate contrast (not too harsh, not too soft)
+   - Balance detail with readability
+   - Avoid overly complex designs that lose clarity
 
-3. **Animation:**
-   - Keep animations subtle and smooth
-   - Ensure walking animation looks natural
+5. **Animation:**
+   - Keep animations smooth and natural
+   - Use soft pixel style in motion
+   - Ensure walking animation looks fluid
    - Test animations by viewing frames in sequence
+   - Consider unique movement styles for creative avatars
 
-4. **Transparency:**
+6. **Transparency:**
    - Use proper alpha channels
    - Avoid white/black backgrounds (use transparency)
-   - Ensure clean edges
+   - Ensure clean, soft edges
+   - Use soft shadows that fade to transparency
+
+## Diversity & Inclusivity Guidelines
+
+### Mandatory Requirements
+
+**Every new woka MUST meet at least ONE of these criteria:**
+
+1. **Creative Style & Movement**
+   - Unique artistic expression
+   - Innovative visual design
+   - Creative movement patterns
+   - Distinctive style that adds variety
+
+2. **Diversity Representation**
+   - Represents one or more aspects of diversity:
+     - Gender diversity (various gender expressions, non-binary, trans)
+     - Sexual orientation (LGBTQ+ representation)
+     - Caste diversity (various social groups)
+     - Economic class (different socioeconomic backgrounds)
+     - Religion (various faiths and beliefs)
+     - Race & Ethnicity (diverse racial/ethnic backgrounds)
+     - Disability (visible disabilities, mobility aids, assistive devices)
+
+### Diversity Design Checklist
+
+When creating diverse avatars, ensure:
+
+- [ ] **Authentic Representation**
+  - Research the group/identity you're representing
+  - Use accurate and respectful visual elements
+  - Avoid stereotypes and caricatures
+
+- [ ] **Intersectionality**
+  - Consider multiple aspects of identity (e.g., disabled person of color)
+  - Represent diverse combinations
+  - Avoid single-dimensional representation
+
+- [ ] **Accessibility**
+  - Include mobility aids when representing disability
+  - Show assistive devices accurately
+  - Consider various types of disabilities (mobility, visual, hearing, etc.)
+
+- [ ] **Cultural Sensitivity**
+  - Research cultural and religious symbols
+  - Use authentic clothing and accessories
+  - Avoid cultural appropriation
+  - Consult with community members when possible
+
+- [ ] **Body Diversity**
+  - Various body types and sizes
+  - Different proportions
+  - Avoid body shaming or unrealistic standards
+
+- [ ] **Visual Authenticity**
+  - Accurate skin tone representation
+  - Diverse hair textures and styles
+  - Authentic cultural/religious clothing
+  - Realistic mobility aids and assistive devices
+
+### Examples of Diverse Representations
+
+**Gender & Sexuality:**
+- Non-binary characters with diverse presentations
+- Trans characters with authentic representation
+- LGBTQ+ pride elements (when appropriate)
+- Various gender expressions
+
+**Race & Ethnicity:**
+- Diverse skin tones across the spectrum
+- Authentic cultural clothing and accessories
+- Various hair textures and styles
+- Cultural hairstyles (braids, locs, buns, etc.)
+
+**Disability:**
+- Wheelchair users (manual and electric)
+- People using canes, walkers, crutches
+- Visual aids (canes, guide dogs)
+- Hearing aids and other assistive devices
+- Prosthetics and adaptive equipment
+- Service animals
+
+**Religion:**
+- Hijabs, turbans, kippahs, and other religious headwear
+- Religious clothing and symbols
+- Various faith representations
+
+**Class:**
+- Diverse economic backgrounds
+- Various clothing styles
+- Avoid stereotypes about class
+
+**Caste:**
+- Representation across different social groups
+- Avoid reinforcing caste hierarchies
+- Focus on authentic representation
+
+### Resources for Authentic Representation
+
+- **Disability Representation:**
+  - Consult disability advocacy organizations
+  - Research accurate mobility aid designs
+  - Study how disabilities are represented respectfully
+
+- **Cultural & Religious Representation:**
+  - Consult with community members
+  - Research authentic clothing and symbols
+  - Avoid stereotypes and generalizations
+
+- **Gender & Sexuality:**
+  - Consult LGBTQ+ organizations
+  - Research authentic representation
+  - Avoid stereotypes
+
+### Soft Pixel Style for Diverse Characters
+
+When applying soft pixel style to diverse characters:
+
+- Use soft gradients for skin tones (avoid flat colors)
+- Apply gentle shading to cultural clothing
+- Use smooth transitions for hair textures
+- Maintain soft pixel aesthetic while preserving authentic features
+- Ensure mobility aids are clearly visible but styled softly
+- Use anti-aliasing for smooth edges on all elements
 
 ---
 
@@ -672,6 +910,14 @@ Collections allow you to group related wokas together.
 - [ ] Sprite sheet is 96×128 pixels (3×4 grid of 32×32 frames)
 - [ ] PNG format with transparency
 - [ ] All 12 frames are present and correctly positioned
+- [ ] **Soft pixel style applied** (gradients, smooth transitions, anti-aliasing)
+- [ ] **Meets diversity/creativity requirement:**
+  - [ ] Creative style & movement, OR
+  - [ ] Represents diversity (gender, sexuality, caste, class, religion, race, disability)
+- [ ] **If representing diversity:**
+  - [ ] Authentic and respectful representation
+  - [ ] Researched the group/identity
+  - [ ] Avoided stereotypes
 - [ ] File placed in `play/public/resources/characters/`
 - [ ] Entry added to `woka.json` in `"woka"` section
 - [ ] JSON syntax is valid
@@ -682,6 +928,16 @@ Collections allow you to group related wokas together.
 ### For Layer-Based Wokas:
 - [ ] Each layer sprite sheet is 96×128 pixels
 - [ ] All layers align properly
+- [ ] **Soft pixel style applied** to all layers
+- [ ] **Meets diversity/creativity requirement:**
+  - [ ] Creative style & movement, OR
+  - [ ] Represents diversity through layers
+- [ ] **If representing diversity:**
+  - [ ] Diverse skin tones in body layer
+  - [ ] Diverse hair textures/styles in hair layer
+  - [ ] Cultural/religious clothing in clothes/hat layers
+  - [ ] Mobility aids/assistive devices in accessory layer
+  - [ ] Authentic and respectful representation
 - [ ] Files placed in appropriate customisation directories
 - [ ] Entries added to `woka.json` for each layer
 - [ ] JSON syntax is valid
